@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Card;
 use Illuminate\Http\Request;
+use RuntimeException;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class CardController extends Controller
 {
@@ -29,7 +31,15 @@ class CardController extends Controller
             'image' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $data['image_path'] = $this->handleUpload($request);
+        try {
+            $data['image_path'] = $this->handleUpload($request);
+        } catch (FileException|RuntimeException $e) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'image' => 'Image upload failed. Please check folder permission for public/uploads/cards.',
+                ]);
+        }
 
         Card::create($data);
 
@@ -55,7 +65,16 @@ class CardController extends Controller
             'image' => ['nullable', 'image', 'max:2048'],
         ]);
 
-        $newImagePath = $this->handleUpload($request);
+        try {
+            $newImagePath = $this->handleUpload($request);
+        } catch (FileException|RuntimeException $e) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'image' => 'Image upload failed. Please check folder permission for public/uploads/cards.',
+                ]);
+        }
+
         if ($newImagePath) {
             $this->deleteOldImage($card->image_path);
             $data['image_path'] = $newImagePath;
@@ -84,7 +103,13 @@ class CardController extends Controller
         $uploadDir = public_path('uploads/cards');
 
         if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+            if (!mkdir($uploadDir, 0755, true) && !is_dir($uploadDir)) {
+                throw new RuntimeException('Unable to create upload directory.');
+            }
+        }
+
+        if (!is_writable($uploadDir)) {
+            throw new RuntimeException('Upload directory is not writable.');
         }
 
         $filename = uniqid('card_', true) . '.' . $file->getClientOriginalExtension();

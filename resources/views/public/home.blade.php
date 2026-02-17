@@ -32,6 +32,16 @@
         let activeController;
 
         if (searchInput && searchForm && cardsContainer) {
+            const fetchHtml = (url, signal = null) => {
+                return fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html',
+                    },
+                    signal,
+                }).then((response) => response.text());
+            };
+
             const fetchCards = () => {
                 const params = new URLSearchParams();
                 const value = searchInput.value.trim();
@@ -47,14 +57,7 @@
                 activeController = new AbortController();
                 const url = `${searchForm.action}?${params.toString()}`;
 
-                fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'text/html',
-                    },
-                    signal: activeController.signal,
-                })
-                    .then((response) => response.text())
+                fetchHtml(url, activeController.signal)
                     .then((html) => {
                         cardsContainer.innerHTML = html;
                     })
@@ -73,6 +76,51 @@
             searchInput.addEventListener('input', () => {
                 clearTimeout(searchTimer);
                 searchTimer = setTimeout(fetchCards, 300);
+            });
+
+            cardsContainer.addEventListener('click', (event) => {
+                const button = event.target.closest('#load-more-cards');
+
+                if (!button) {
+                    return;
+                }
+
+                const nextPageUrl = button.dataset.nextPage;
+                if (!nextPageUrl) {
+                    return;
+                }
+
+                button.disabled = true;
+                button.textContent = 'Loading...';
+
+                fetchHtml(nextPageUrl)
+                    .then((html) => {
+                        const parser = new DOMParser();
+                        const doc = parser.parseFromString(html, 'text/html');
+                        const nextGrid = doc.getElementById('cards-grid');
+                        const currentGrid = cardsContainer.querySelector('#cards-grid');
+
+                        if (nextGrid && currentGrid) {
+                            nextGrid.querySelectorAll(':scope > *').forEach((item) => {
+                                currentGrid.appendChild(item);
+                            });
+                        }
+
+                        const nextButton = doc.getElementById('load-more-cards');
+
+                        if (nextButton && nextButton.dataset.nextPage) {
+                            button.dataset.nextPage = nextButton.dataset.nextPage;
+                            button.disabled = false;
+                            button.textContent = 'See more';
+                        } else {
+                            button.closest('#cards-load-more-wrap')?.remove();
+                        }
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        button.disabled = false;
+                        button.textContent = 'See more';
+                    });
             });
         }
     </script>
