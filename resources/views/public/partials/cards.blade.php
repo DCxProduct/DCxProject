@@ -17,7 +17,7 @@
         </div>
     @empty
         <div class="col-12">
-            <div class="alert alert-info mb-0">No cards found.</div>
+            <div class="alert alert-info mb-0">No cards found.!</div>
         </div>
     @endforelse
 </div>
