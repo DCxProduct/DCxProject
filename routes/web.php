@@ -40,8 +40,45 @@ Route::get('/cards/{card}/open', function (Card $card) {
         return redirect('/');
     }
 
+    $user = auth()->user();
+    $configuredAdminEmail = (string) config('app.admin_email');
+    $isAdmin = $user
+        && (
+            (int) $user->id === 1
+            || strtolower((string) $user->name) === 'admin'
+            || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
+        );
+
+    if ($card->require_login && $isAdmin) {
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect()->route('user.login', [
+            'next' => "/cards/{$card->id}/open",
+        ]);
+    }
+
+    $hasRememberLogin = (bool) request()->session()->get('user_login_remember', false) || Auth::viaRemember();
+    $currentPath = "/cards/{$card->id}/open";
+    $allowPathOnce = (string) request()->session()->get('user_nonremember_allow_path', '');
+
+    if ($card->require_login && !$hasRememberLogin && $allowPathOnce === $currentPath) {
+        request()->session()->forget('user_nonremember_allow_path');
+    } elseif ($card->require_login && auth()->check() && !$hasRememberLogin) {
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect()->route('user.login', [
+            'next' => $currentPath,
+        ]);
+    }
+
     if ($card->require_login && auth()->guest()) {
-        return redirect()->guest(route('login'));
+        return redirect()->route('user.login', [
+            'next' => $currentPath,
+        ]);
     }
 
     return redirect()->away($card->link_url);
@@ -53,23 +90,14 @@ Route::get('/cards/{card}/open', function (Card $card) {
 |--------------------------------------------------------------------------
 */
 Auth::routes(['register' => false]);
-Route::get('/admin/login', function () {
+Route::get('/user/login', function () {
     $next = request()->query('next');
 
+    if (Auth::guard('admin')->check()) {
+        Auth::guard('admin')->logout();
+    }
+
     if (Auth::check()) {
-        $user = Auth::user();
-        $configuredAdminEmail = (string) config('app.admin_email');
-        $isAdmin = $user
-            && (
-                (int) $user->id === 1
-                || strtolower((string) $user->name) === 'admin'
-                || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
-            );
-
-        if ($isAdmin) {
-            return redirect()->to($next ?: '/admin/dashboard');
-        }
-
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
@@ -78,7 +106,7 @@ Route::get('/admin/login', function () {
     return redirect()->route('login', array_filter([
         'next' => $next,
     ]));
-})->name('admin.login');
+})->name('user.login');
 
 /*
 |--------------------------------------------------------------------------
@@ -90,4 +118,7 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
+
+
+
 

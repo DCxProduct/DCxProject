@@ -74,6 +74,16 @@
     <div class="login-card">
         <h2>Login to Your Account</h2>
 
+        @if (session('status'))
+            <div class="alert alert-success py-2">{{ session('status') }}</div>
+        @endif
+
+        @if ($errors->any())
+            <div class="alert alert-danger py-2">
+                {{ $errors->first('login') ?: $errors->first() }}
+            </div>
+        @endif
+
         <form id="login-form" action="{{ route('login') }}" method="POST">
             @csrf
             <input type="hidden" name="next" value="{{ request('next') }}">
@@ -82,7 +92,7 @@
             <div class="mb-3">
                 <label for="login" class="form-label">Email or Username</label>
                 <input type="text" class="form-control" id="login" name="login" placeholder="Enter email or username"
-                    required>
+                    value="{{ old('login') }}" required>
             </div>
 
             <!-- Password -->

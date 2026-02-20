@@ -4,7 +4,16 @@
             <div class="card project-card text-center">
                 @php
                     $imageSrc = $card->image_path ? asset($card->image_path) : asset('img/download.png');
-                    $requiresLogin = $card->require_login && auth()->guest();
+                    $user = auth()->user();
+                    $configuredAdminEmail = (string) config('app.admin_email');
+                    $isAdminViewer = $user
+                        && (
+                            (int) $user->id === 1
+                            || strtolower((string) $user->name) === 'admin'
+                            || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
+                        );
+                    $hasRememberLogin = (bool) session('user_login_remember', false) || auth()->viaRemember();
+                    $requiresLogin = $card->require_login && (auth()->guest() || $isAdminViewer || !$hasRememberLogin);
                     $cardUrl = route('cards.open', $card);
                     $openTarget = $card->link_url ? '_blank' : '_self';
                 @endphp
@@ -39,3 +48,5 @@
 <div class="mt-3">
     {{ $cards->links() }}
 </div>
+
+

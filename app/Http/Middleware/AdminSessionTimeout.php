@@ -13,8 +13,28 @@ class AdminSessionTimeout
 
     public function handle(Request $request, Closure $next): Response
     {
-        if (!Auth::check()) {
+        if (!Auth::guard('admin')->check()) {
             return $next($request);
+        }
+
+        if (Auth::guard('admin')->viaRemember()) {
+            $request->session()->put('admin_login_remember', true);
+        }
+
+        $hasRememberLogin = (bool) $request->session()->get('admin_login_remember', false);
+        $currentPath = $request->getPathInfo();
+        $allowPathOnce = (string) $request->session()->get('admin_nonremember_allow_path', '');
+
+        if (!$hasRememberLogin) {
+            if ($allowPathOnce !== '' && $allowPathOnce === $currentPath) {
+                $request->session()->forget('admin_nonremember_allow_path');
+            } else {
+                Auth::guard('admin')->logout();
+                $request->session()->invalidate();
+                $request->session()->regenerateToken();
+
+                return redirect()->route('admin.login');
+            }
         }
 
         $now = time();
@@ -22,13 +42,10 @@ class AdminSessionTimeout
         $timeoutSeconds = self::TIMEOUT_MINUTES * 60;
 
         if ($lastActivity > 0 && ($now - $lastActivity) > $timeoutSeconds) {
-            Auth::logout();
+            Auth::guard('admin')->logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
-
-            return redirect()->route('admin.login', [
-                'next' => '/admin/dashboard',
-            ]);
+            return redirect()->route('admin.login');
         }
 
         $request->session()->put('admin_last_activity_at', $now);

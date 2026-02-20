@@ -39,7 +39,7 @@ class LoginController extends Controller
      */
     protected function credentials(Request $request)
     {
-        $login = $request->input('login');
+        $login = trim((string) $request->input('login'));
         $field = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'name';
 
         return [
@@ -50,12 +50,19 @@ class LoginController extends Controller
 
     protected function authenticated(Request $request, $user)
     {
-        // Reset admin timeout clock on each successful login.
+        // Reset timeout clocks and remember flag on each successful user login.
         $request->session()->put('admin_last_activity_at', time());
+        $request->session()->put('user_last_activity_at', time());
+        $isRemember = $request->boolean('remember');
+        $request->session()->put('user_login_remember', $isRemember);
 
         $next = trim((string) $request->input('next', ''));
 
         if ($next !== '' && $this->isSafeNextPath($next)) {
+            if (!$isRemember && str_starts_with($next, '/cards/')) {
+                $request->session()->put('user_nonremember_allow_path', $next);
+            }
+
             return redirect()->to($next);
         }
 
@@ -90,4 +97,6 @@ class LoginController extends Controller
         $this->middleware('auth')->only('logout');
     }
 }
+
+
 

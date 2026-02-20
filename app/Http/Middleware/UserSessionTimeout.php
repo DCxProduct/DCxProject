@@ -9,7 +9,7 @@ use Symfony\Component\HttpFoundation\Response;
 
 class UserSessionTimeout
 {
-    private const TIMEOUT_MINUTES = 30;
+    private const TIMEOUT_MINUTES = 1;
 
     public function handle(Request $request, Closure $next): Response
     {
@@ -27,6 +27,16 @@ class UserSessionTimeout
             );
 
         if ($isAdmin) {
+            return $next($request);
+        }
+
+        if (Auth::viaRemember()) {
+            $request->session()->put('user_login_remember', true);
+        }
+
+        $hasRememberLogin = (bool) $request->session()->get('user_login_remember', false);
+        if ($hasRememberLogin) {
+            $request->session()->put('user_last_activity_at', time());
             return $next($request);
         }
 
@@ -49,3 +59,4 @@ class UserSessionTimeout
         return $next($request);
     }
 }
+

@@ -111,7 +111,7 @@
                     if (pendingLoginUrl) {
                         const url = new URL(pendingLoginUrl, window.location.origin);
                         const nextPath = `${url.pathname}${url.search}`;
-                        const loginUrl = `/admin/login?next=${encodeURIComponent(nextPath)}`;
+                        const loginUrl = `/user/login?next=${encodeURIComponent(nextPath)}`;
                         window.open(loginUrl, '_blank', 'noopener');
                         hideLoginAlert();
                         return;
@@ -243,3 +243,4 @@
     </script>
 
 @endsection
+
