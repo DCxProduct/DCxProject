@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>User Login</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/images (1).png') }}">
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -75,11 +76,12 @@
 
         <form id="login-form" action="{{ route('login') }}" method="POST">
             @csrf
+            <input type="hidden" name="next" value="{{ request('next') }}">
 
-            <!-- Email -->
+            <!-- Email or Username -->
             <div class="mb-3">
-                <label for="email" class="form-label">Email address</label>
-                <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email"
+                <label for="login" class="form-label">Email or Username</label>
+                <input type="text" class="form-control" id="login" name="login" placeholder="Enter email or username"
                     required>
             </div>
 
@@ -92,7 +94,7 @@
 
             <!-- Remember Me -->
             <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" value="" id="remember" name="remember">
+                <input class="form-check-input" type="checkbox" value="1" id="remember" name="remember">
                 <label class="form-check-label" for="remember">
                     Remember Me
                 </label>
@@ -129,3 +131,4 @@
 </body>
 
 </html>
+

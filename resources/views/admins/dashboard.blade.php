@@ -8,7 +8,7 @@
         <p class="mt-2">Search anything quickly in your system using the search box below.</p>
 
         <form id="admin-card-search-form" class="d-flex flex-column flex-sm-row justify-content-center align-items-center mt-4 px-3 gap-2" method="GET" action="{{ route('admin.dashboard') }}">
-            <input type="text" id="admin-card-search-input" name="q" class="form-control" style="max-width: 420px;" placeholder="Search by card name..." value="{{ $query ?? '' }}">
+            <input type="text" id="admin-card-search-input" name="q" class="form-control" style="max-width: 420px;" placeholder="Search ..." value="{{ $query ?? '' }}">
             <button class="btn btn-warning ms-0 ms-sm-2 px-4" type="submit">Search</button>
         </form>
     </div>
@@ -16,7 +16,7 @@
     <!-- CARDS -->
     <div class="container my-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="fw-bold mb-0">Latest Cards</h4>
+            <h4 class="fw-bold mb-0">Latest Applications</h4>
             <a href="{{ route('admin.cards.create') }}" class="btn btn-success">Create</a>
         </div>
 

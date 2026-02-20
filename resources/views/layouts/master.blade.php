@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'DCX')</title>
+    <link rel="icon" type="image/png" href="{{ asset('img/images (1).png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
@@ -112,16 +113,7 @@
                 <img src="{{ asset('img/images (1).png') }}" height="36" class="me-2" alt="DCX logo">
             </a>
 
-            <div>
-                @guest
-                    
-                @else
-                    <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                        @csrf
-                        <button type="submit" class="btn btn-warning px-4">Logout</button>
-                    </form>
-                @endguest
-            </div>
+            <div></div>
         </div>
     </nav>
 
@@ -147,3 +139,4 @@
 </body>
 
 </html>
+

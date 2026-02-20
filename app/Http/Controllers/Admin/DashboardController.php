@@ -16,7 +16,9 @@ class DashboardController extends Controller
             ->when($query, function ($q) use ($query) {
                 $q->where('name', 'like', '%' . $query . '%');
             })
-            ->latest()
+            ->orderByRaw('shape_number IS NULL')
+            ->orderBy('shape_number')
+            ->latest('id')
             ->paginate(12)
             ->withQueryString();
 

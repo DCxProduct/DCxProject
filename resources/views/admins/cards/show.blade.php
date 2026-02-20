@@ -6,7 +6,7 @@
             <h4 class="fw-bold mb-0">{{ $card->name }}</h4>
             <div class="d-flex gap-2">
                 <a href="{{ route('admin.cards.edit', $card) }}" class="btn btn-primary">Edit</a>
-                <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" onsubmit="return confirm('Are you sure to delete this card?');">
+                <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" class="js-confirm-delete">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Delete</button>
@@ -19,7 +19,14 @@
         @endphp
 
         <div class="card shadow-sm">
-            <img src="{{ $imageSrc }}" class="card-img-top p-4">
+            <div class="position-relative">
+                @if (!is_null($card->shape_number))
+                    <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill" style="z-index: 1; background-color: #0a5f66; color: #ffffff;">
+                        {{ $card->shape_number }}
+                    </span>
+                @endif
+                <img src="{{ $imageSrc }}" class="card-img-top p-4">
+            </div>
             <div class="card-body">
                 <p class="text-muted mb-0">{{ $card->description }}</p>
                 @if ($card->link_url)
@@ -28,6 +35,9 @@
                             {{ $card->link_url }}
                         </a>
                     </div>
+                @endif
+                @if ($card->require_login)
+                    <div class="mt-2 small text-warning">Login required to open this card</div>
                 @endif
             </div>
         </div>

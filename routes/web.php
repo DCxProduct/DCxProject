@@ -18,7 +18,9 @@ Route::get('/', function () {
         ->when($query, function ($q) use ($query) {
             $q->where('name', 'like', '%' . $query . '%');
         })
-        ->latest()
+        ->orderByRaw('shape_number IS NULL')
+        ->orderBy('shape_number')
+        ->latest('id')
         ->paginate(12)
         ->withQueryString();
 
@@ -33,13 +35,50 @@ Route::get('/project/{slug}', function ($slug) {
     return view('public.project-detail', compact('slug'));
 });
 
+Route::get('/cards/{card}/open', function (Card $card) {
+    if (!$card->link_url) {
+        return redirect('/');
+    }
+
+    if ($card->require_login && auth()->guest()) {
+        return redirect()->guest(route('login'));
+    }
+
+    return redirect()->away($card->link_url);
+})->middleware('user.timeout')->name('cards.open');
+
 /*
 |--------------------------------------------------------------------------
 | Auth Routes (Laravel default)
 |--------------------------------------------------------------------------
 */
-Auth::routes();
-Route::redirect('/admin/login', '/login')->middleware('guest');
+Auth::routes(['register' => false]);
+Route::get('/admin/login', function () {
+    $next = request()->query('next');
+
+    if (Auth::check()) {
+        $user = Auth::user();
+        $configuredAdminEmail = (string) config('app.admin_email');
+        $isAdmin = $user
+            && (
+                (int) $user->id === 1
+                || strtolower((string) $user->name) === 'admin'
+                || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
+            );
+
+        if ($isAdmin) {
+            return redirect()->to($next ?: '/admin/dashboard');
+        }
+
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+    }
+
+    return redirect()->route('login', array_filter([
+        'next' => $next,
+    ]));
+})->name('admin.login');
 
 /*
 |--------------------------------------------------------------------------
@@ -51,3 +90,4 @@ Route::get('/home', [HomeController::class, 'index'])->name('home');
 Route::fallback(function () {
     return response()->view('errors.404', [], 404);
 });
+

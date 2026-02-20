@@ -11,8 +11,10 @@ class Card extends Model
 
     protected $fillable = [
         'name',
+        'shape_number',
         'description',
         'link_url',
+        'require_login',
         'image_path',
     ];
 }

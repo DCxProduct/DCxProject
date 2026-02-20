@@ -12,7 +12,11 @@ class CardController extends Controller
 {
     public function index()
     {
-        $cards = Card::latest()->paginate(10);
+        $cards = Card::query()
+            ->orderByRaw('shape_number IS NULL')
+            ->orderBy('shape_number')
+            ->latest('id')
+            ->paginate(10);
 
         return view('admins.cards.index', compact('cards'));
     }
@@ -26,10 +30,13 @@ class CardController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'shape_number' => ['nullable', 'integer', 'min:0'],
             'description' => ['nullable', 'string'],
             'link_url' => ['nullable', 'url', 'max:255'],
+            'require_login' => ['nullable', 'boolean'],
             'image' => ['nullable', 'image', 'max:2048'],
         ]);
+        $data['require_login'] = $request->boolean('require_login');
 
         try {
             $data['image_path'] = $this->handleUpload($request);
@@ -60,10 +67,13 @@ class CardController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
+            'shape_number' => ['nullable', 'integer', 'min:0'],
             'description' => ['nullable', 'string'],
             'link_url' => ['nullable', 'url', 'max:255'],
+            'require_login' => ['nullable', 'boolean'],
             'image' => ['nullable', 'image', 'max:2048'],
         ]);
+        $data['require_login'] = $request->boolean('require_login');
 
         try {
             $newImagePath = $this->handleUpload($request);

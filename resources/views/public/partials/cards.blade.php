@@ -4,9 +4,23 @@
             <div class="card project-card text-center">
                 @php
                     $imageSrc = $card->image_path ? asset($card->image_path) : asset('img/download.png');
+                    $requiresLogin = $card->require_login && auth()->guest();
+                    $cardUrl = route('cards.open', $card);
+                    $openTarget = $card->link_url ? '_blank' : '_self';
                 @endphp
-                <div class="card-media">
-                    <a href="{{ $card->link_url ?: '#' }}" class="text-decoration-none text-dark" target="_blank">
+                <div class="card-media position-relative">
+                    @if (!is_null($card->shape_number))
+                        <span class="position-absolute top-0 start-0 mt-2 ms-2 badge rounded-pill" style="z-index: 2; background-color: #0a5f66; color: #ffffff;">
+                            {{ $card->shape_number }}
+                        </span>
+                    @endif
+                    <a
+                        href="{{ $cardUrl }}"
+                        class="text-decoration-none text-dark{{ $requiresLogin ? ' js-login-required' : '' }}"
+                        target="{{ $openTarget }}"
+                        rel="noopener noreferrer"
+                        @if ($requiresLogin) data-login-message="Please login first to open this Application!" @endif
+                    >
                         <img src="{{ $imageSrc }}" class="card-image">
                     </a>
                 </div>
@@ -17,7 +31,7 @@
         </div>
     @empty
         <div class="col-12">
-            <div class="alert alert-info mb-0">No cards found!</div>
+            <div class="alert alert-info mb-0">No Applications found!</div>
         </div>
     @endforelse
 </div>
