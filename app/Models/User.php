@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable
 {
@@ -45,5 +46,18 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function avatarRelativePath(): ?string
+    {
+        $matches = glob(public_path('uploads/avatars/user_'.$this->id.'.*')) ?: [];
+
+        if ($matches === []) {
+            return null;
+        }
+
+        $relative = Str::after($matches[0], public_path().DIRECTORY_SEPARATOR);
+
+        return str_replace('\\', '/', $relative);
     }
 }

@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\ProfileController;
 use App\Models\Card;
 
 
@@ -29,7 +30,7 @@ Route::get('/', function () {
     }
 
     return view('public.home', compact('cards', 'query'));
-});
+})->middleware('user.timeout');
 
 Route::get('/project/{slug}', function ($slug) {
     return view('public.project-detail', compact('slug'));
@@ -59,21 +60,7 @@ Route::get('/cards/{card}/open', function (Card $card) {
         ]);
     }
 
-    $hasRememberLogin = (bool) request()->session()->get('user_login_remember', false) || Auth::viaRemember();
     $currentPath = "/cards/{$card->id}/open";
-    $allowPathOnce = (string) request()->session()->get('user_nonremember_allow_path', '');
-
-    if ($card->require_login && !$hasRememberLogin && $allowPathOnce === $currentPath) {
-        request()->session()->forget('user_nonremember_allow_path');
-    } elseif ($card->require_login && auth()->check() && !$hasRememberLogin) {
-        Auth::logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
-
-        return redirect()->route('user.login', [
-            'next' => $currentPath,
-        ]);
-    }
 
     if ($card->require_login && auth()->guest()) {
         return redirect()->route('user.login', [
@@ -90,6 +77,27 @@ Route::get('/cards/{card}/open', function (Card $card) {
 |--------------------------------------------------------------------------
 */
 Auth::routes(['register' => false]);
+
+Route::middleware(['auth', 'user.timeout'])->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+});
+
+Route::get('/auth/status', function () {
+    $nextPath = (string) request()->query('next', '/');
+    if (!str_starts_with($nextPath, '/') || str_starts_with($nextPath, '//')) {
+        $nextPath = '/';
+    }
+
+    return response()->json([
+        'authenticated' => Auth::check(),
+        'controls_html' => view('public.partials.auth_controls', [
+            'loggedUser' => Auth::user(),
+            'nextPath' => $nextPath,
+        ])->render(),
+    ]);
+})->name('auth.status');
+
 Route::get('/user/login', function () {
     $next = request()->query('next');
 

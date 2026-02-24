@@ -76,13 +76,17 @@
         const searchInput = document.getElementById('card-search-input');
         const searchForm = document.getElementById('card-search-form');
         const cardsContainer = document.getElementById('cards-container');
+        const authControlsContainer = document.getElementById('public-auth-controls');
         const loginAlertOverlay = document.getElementById('login-alert-overlay');
         const loginAlertText = document.getElementById('login-alert-text');
         const loginAlertLogin = document.getElementById('login-alert-login');
         const loginAlertCancel = document.getElementById('login-alert-cancel');
+        let isAuthenticated = @json(auth()->check());
+        const sessionTimeoutMs = 15 * 60 * 1000;
         let pendingLoginUrl = null;
         let searchTimer;
         let activeController;
+        let lastServerActivityAt = Date.now();
 
         if (searchInput && searchForm && cardsContainer) {
             const showLoginAlert = (message, loginUrl = null) => {
@@ -149,6 +153,37 @@
                 }).then((response) => response.text());
             };
 
+            const refreshAuthState = async () => {
+                try {
+                    const nextPath = `${window.location.pathname}${window.location.search}`;
+                    const response = await fetch(`/auth/status?next=${encodeURIComponent(nextPath)}`, {
+                        headers: {
+                            'Accept': 'application/json',
+                        },
+                    });
+
+                    if (!response.ok) {
+                        return isAuthenticated;
+                    }
+
+                    const data = await response.json();
+                    const wasAuthenticated = isAuthenticated;
+                    isAuthenticated = !!data.authenticated;
+
+                    if (authControlsContainer && typeof data.controls_html === 'string') {
+                        authControlsContainer.innerHTML = data.controls_html;
+                    }
+
+                    if (isAuthenticated && !wasAuthenticated) {
+                        lastServerActivityAt = Date.now();
+                    }
+
+                    return isAuthenticated;
+                } catch (error) {
+                    return isAuthenticated;
+                }
+            };
+
             const fetchCards = () => {
                 const params = new URLSearchParams();
                 const value = searchInput.value.trim();
@@ -167,6 +202,7 @@
                 fetchHtml(url, activeController.signal)
                     .then((html) => {
                         cardsContainer.innerHTML = html;
+                        lastServerActivityAt = Date.now();
                     })
                     .catch((error) => {
                         if (error.name !== 'AbortError') {
@@ -185,14 +221,41 @@
                 searchTimer = setTimeout(fetchCards, 300);
             });
 
-            cardsContainer.addEventListener('click', (event) => {
+            window.addEventListener('focus', () => {
+                refreshAuthState();
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) {
+                    refreshAuthState();
+                }
+            });
+
+            cardsContainer.addEventListener('click', async (event) => {
                 const guardedLink = event.target.closest('a.js-login-required');
                 if (guardedLink) {
                     event.preventDefault();
-                    showLoginAlert(
-                        guardedLink.dataset.loginMessage || 'Please login first.',
-                        guardedLink.href
-                    );
+                    const authNow = await refreshAuthState();
+                    const forceLogin = guardedLink.dataset.forceLogin === '1';
+                    const isInactive = (Date.now() - lastServerActivityAt) >= sessionTimeoutMs;
+                    const shouldPromptLogin = forceLogin || !authNow || isInactive;
+
+                    if (shouldPromptLogin) {
+                        showLoginAlert(
+                            isInactive
+                                ? 'Your session expired after 15 minutes of inactivity. Please login again.'
+                                : (guardedLink.dataset.loginMessage || 'Please login first.'),
+                            guardedLink.href
+                        );
+                        return;
+                    }
+
+                    if (guardedLink.target === '_blank') {
+                        window.open(guardedLink.href, '_blank', 'noopener');
+                    } else {
+                        window.location.href = guardedLink.href;
+                    }
+
                     return;
                 }
 
@@ -243,4 +306,3 @@
     </script>
 
 @endsection
-

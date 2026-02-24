@@ -12,8 +12,8 @@
                             || strtolower((string) $user->name) === 'admin'
                             || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
                         );
-                    $hasRememberLogin = (bool) session('user_login_remember', false) || auth()->viaRemember();
-                    $requiresLogin = $card->require_login && (auth()->guest() || $isAdminViewer || !$hasRememberLogin);
+                    $isProtectedCard = (bool) $card->require_login;
+                    $requiresLogin = $isProtectedCard && (auth()->guest() || $isAdminViewer);
                     $cardUrl = route('cards.open', $card);
                     $openTarget = $card->link_url ? '_blank' : '_self';
                 @endphp
@@ -25,10 +25,13 @@
                     @endif
                     <a
                         href="{{ $cardUrl }}"
-                        class="text-decoration-none text-dark{{ $requiresLogin ? ' js-login-required' : '' }}"
+                        class="text-decoration-none text-dark{{ $isProtectedCard ? ' js-login-required' : '' }}"
                         target="{{ $openTarget }}"
                         rel="noopener noreferrer"
-                        @if ($requiresLogin) data-login-message="Please login first to open this Application!" @endif
+                        @if ($isProtectedCard)
+                            data-login-message="Please login first to open this Application!"
+                            data-force-login="{{ $requiresLogin ? '1' : '0' }}"
+                        @endif
                     >
                         <img src="{{ $imageSrc }}" class="card-image">
                     </a>
@@ -48,5 +51,4 @@
 <div class="mt-3">
     {{ $cards->links() }}
 </div>
-
 

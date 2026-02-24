@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Support\Facades\Cookie;
 
 class LoginController extends Controller
 {
@@ -55,6 +56,11 @@ class LoginController extends Controller
         $request->session()->put('user_last_activity_at', time());
         $isRemember = $request->boolean('remember');
         $request->session()->put('user_login_remember', $isRemember);
+        if ($isRemember) {
+            Cookie::queue('user_remember_flag', '1', 30);
+        } else {
+            Cookie::queue(Cookie::forget('user_remember_flag'));
+        }
 
         $next = trim((string) $request->input('next', ''));
 
@@ -67,6 +73,11 @@ class LoginController extends Controller
         }
 
         return null;
+    }
+
+    protected function loggedOut(Request $request)
+    {
+        Cookie::queue(Cookie::forget('user_remember_flag'));
     }
 
     private function isSafeNextPath(string $next): bool
