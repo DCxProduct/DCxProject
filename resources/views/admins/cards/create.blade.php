@@ -2,7 +2,7 @@
 
 @section('content')
     <div class="container my-5" style="max-width: 720px;">
-        <h4 class="fw-bold mb-4">Create Card</h4>
+        <h4 class="fw-bold mb-4">Create Application</h4>
 
         <div class="card shadow-sm">
             <div class="card-body">
@@ -19,7 +19,8 @@
 
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3">{{ old('description') }}</textarea>
+                        <textarea name="description" class="form-control" rows="3" maxlength="130">{{ old('description') }}</textarea>
+                        <div class="form-text">Maximum 130 characters.</div>
                         @error('description')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror

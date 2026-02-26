@@ -17,16 +17,14 @@ class UserSessionTimeout
             return $next($request);
         }
 
-        $user = Auth::user();
-        $configuredAdminEmail = (string) config('app.admin_email');
-        $isAdmin = $user
-            && (
-                (int) $user->id === 1
-                || strtolower((string) $user->name) === 'admin'
-                || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
-            );
+        $guard = Auth::guard('web');
+        $hasRememberLogin = (bool) $request->session()->get('user_login_remember', false)
+            || $request->cookie('user_remember_flag') === '1'
+            || (method_exists($guard, 'viaRemember') && $guard->viaRemember());
 
-        if ($isAdmin) {
+        if ($hasRememberLogin) {
+            $request->session()->put('user_login_remember', true);
+            $request->session()->put('user_last_activity_at', time());
             return $next($request);
         }
 

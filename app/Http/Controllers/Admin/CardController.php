@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Card;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
@@ -30,11 +31,13 @@ class CardController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'shape_number' => ['nullable', 'integer', 'min:0'],
-            'description' => ['nullable', 'string'],
+            'shape_number' => ['nullable', 'integer', 'min:0', Rule::unique('cards', 'shape_number')],
+            'description' => ['nullable', 'string', 'max:130'],
             'link_url' => ['nullable', 'url', 'max:255'],
             'require_login' => ['nullable', 'boolean'],
             'image' => ['nullable', 'image', 'max:2048'],
+        ], [
+            'shape_number.unique' => 'Order Number already exists.',
         ]);
         $data['require_login'] = $request->boolean('require_login');
 
@@ -67,11 +70,13 @@ class CardController extends Controller
     {
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'shape_number' => ['nullable', 'integer', 'min:0'],
-            'description' => ['nullable', 'string'],
+            'shape_number' => ['nullable', 'integer', 'min:0', Rule::unique('cards', 'shape_number')->ignore($card->id)],
+            'description' => ['nullable', 'string', 'max:130'],
             'link_url' => ['nullable', 'url', 'max:255'],
             'require_login' => ['nullable', 'boolean'],
             'image' => ['nullable', 'image', 'max:2048'],
+        ], [
+            'shape_number.unique' => 'Order Number already exists.',
         ]);
         $data['require_login'] = $request->boolean('require_login');
 

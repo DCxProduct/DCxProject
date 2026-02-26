@@ -24,7 +24,7 @@ class LoginController extends Controller
 
     protected function redirectTo(): string
     {
-        return $this->isAdmin(auth()->user()) ? '/admin/dashboard' : '/';
+        return '/';
     }
 
     /**
@@ -57,7 +57,7 @@ class LoginController extends Controller
         $isRemember = $request->boolean('remember');
         $request->session()->put('user_login_remember', $isRemember);
         if ($isRemember) {
-            Cookie::queue('user_remember_flag', '1', 30);
+            Cookie::queue(Cookie::forever('user_remember_flag', '1'));
         } else {
             Cookie::queue(Cookie::forget('user_remember_flag'));
         }
@@ -83,18 +83,6 @@ class LoginController extends Controller
     private function isSafeNextPath(string $next): bool
     {
         return str_starts_with($next, '/') && !str_starts_with($next, '//');
-    }
-
-    private function isAdmin($user): bool
-    {
-        $configuredAdminEmail = (string) config('app.admin_email');
-
-        return $user
-            && (
-                (int) $user->id === 1
-                || strtolower((string) $user->name) === 'admin'
-                || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
-            );
     }
 
     /**

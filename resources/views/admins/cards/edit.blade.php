@@ -20,7 +20,8 @@
 
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3">{{ old('description', $card->description) }}</textarea>
+                        <textarea name="description" class="form-control" rows="3" maxlength="130">{{ old('description', $card->description) }}</textarea>
+                        <div class="form-text">Maximum 130 characters.</div>
                         @error('description')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror

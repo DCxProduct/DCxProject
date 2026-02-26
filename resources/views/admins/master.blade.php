@@ -51,6 +51,127 @@
             font-weight: 500;
         }
 
+        .profile-pill-avatar {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #025878;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            overflow: hidden;
+        }
+
+        .profile-pill-avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .account-menu {
+            position: relative;
+        }
+
+        .account-trigger {
+            border: 0;
+            padding: 0;
+            background: transparent;
+            line-height: 0;
+            border-radius: 999px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.12);
+        }
+
+        .account-panel {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 12px);
+            width: min(240px, 82vw);
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.22);
+            border: 1px solid rgba(15, 23, 42, 0.08);
+            padding: 10px;
+            z-index: 1200;
+        }
+
+        .account-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px;
+        }
+
+        .account-header-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #0f766e;
+            color: #ffffff;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .account-header-meta {
+            min-width: 0;
+        }
+
+        .account-header-name {
+            color: #111827;
+            font-weight: 700;
+            font-size: 1rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-header-email {
+            color: #6b7280;
+            font-size: 0.84rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .account-items {
+            margin-top: 8px;
+            border-top: 1px solid rgba(15, 23, 42, 0.08);
+            padding-top: 6px;
+            display: grid;
+            gap: 2px;
+        }
+
+        .account-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+            border: 0;
+            background: transparent;
+            color: #111827;
+            border-radius: 10px;
+            text-decoration: none;
+            padding: 8px 8px;
+            font-weight: 600;
+        }
+
+        .account-item:hover {
+            background: #f3f4f6;
+            color: #111827;
+        }
+
+        .account-item-logout {
+            justify-content: flex-start;
+        }
+
         .confirm-overlay {
             position: fixed;
             inset: 0;
@@ -139,13 +260,12 @@
             </a>
             
 
-            <!-- Logout Button -->
-            <div>
-                <a href="{{ route('admin.users.index') }}" class="btn btn-primary px-4 me-2">Users</a>
-                <form method="POST" action="{{ route('admin.logout') }}" class="d-inline">
-                    @csrf
-                    <button type="submit" class="btn btn-warning px-4">Logout</button>
-                </form>
+            <!-- Profile Menu -->
+            <div id="public-auth-controls" class="d-flex align-items-center gap-2">
+                @include('public.partials.auth_controls', [
+                    'loggedUser' => auth()->user(),
+                    'nextPath' => request()->getRequestUri(),
+                ])
             </div>
         </div>
     </nav>
@@ -266,6 +386,48 @@
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {
                     hideConfirm();
+                }
+            });
+
+            const menuSelector = '[data-account-menu]';
+            const toggleSelector = '[data-account-toggle]';
+            const panelSelector = '[data-account-panel]';
+
+            const closeAllMenus = () => {
+                document.querySelectorAll(menuSelector).forEach((menu) => {
+                    const panel = menu.querySelector(panelSelector);
+                    const toggle = menu.querySelector(toggleSelector);
+
+                    if (panel) {
+                        panel.hidden = true;
+                    }
+
+                    if (toggle) {
+                        toggle.setAttribute('aria-expanded', 'false');
+                    }
+                });
+            };
+
+            document.addEventListener('click', (event) => {
+                const toggle = event.target.closest(toggleSelector);
+
+                if (toggle) {
+                    const menu = toggle.closest(menuSelector);
+                    const panel = menu ? menu.querySelector(panelSelector) : null;
+                    const isOpen = panel ? !panel.hidden : false;
+
+                    closeAllMenus();
+
+                    if (panel && !isOpen) {
+                        panel.hidden = false;
+                        toggle.setAttribute('aria-expanded', 'true');
+                    }
+
+                    return;
+                }
+
+                if (!event.target.closest(menuSelector)) {
+                    closeAllMenus();
                 }
             });
         })();

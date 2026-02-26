@@ -17,7 +17,14 @@
 
     <!-- CARDS -->
     <div class="container my-5">
-        <h4 class="fw-bold mb-4">Latest Application</h4>
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <h4 class="fw-bold mb-0">Latest Application</h4>
+            <div class="d-flex gap-2">
+                @if (($isAdmin ?? false))
+                    <a href="{{ route('admin.cards.create') }}" class="btn btn-success btn-sm">Create Card</a>
+                @endif
+            </div>
+        </div>
 
         <div id="cards-container">
             @include('public.partials.cards')
@@ -82,11 +89,9 @@
         const loginAlertLogin = document.getElementById('login-alert-login');
         const loginAlertCancel = document.getElementById('login-alert-cancel');
         let isAuthenticated = @json(auth()->check());
-        const sessionTimeoutMs = 15 * 60 * 1000;
         let pendingLoginUrl = null;
         let searchTimer;
         let activeController;
-        let lastServerActivityAt = Date.now();
 
         if (searchInput && searchForm && cardsContainer) {
             const showLoginAlert = (message, loginUrl = null) => {
@@ -174,10 +179,6 @@
                         authControlsContainer.innerHTML = data.controls_html;
                     }
 
-                    if (isAuthenticated && !wasAuthenticated) {
-                        lastServerActivityAt = Date.now();
-                    }
-
                     return isAuthenticated;
                 } catch (error) {
                     return isAuthenticated;
@@ -202,7 +203,6 @@
                 fetchHtml(url, activeController.signal)
                     .then((html) => {
                         cardsContainer.innerHTML = html;
-                        lastServerActivityAt = Date.now();
                     })
                     .catch((error) => {
                         if (error.name !== 'AbortError') {
@@ -235,14 +235,15 @@
                 const guardedLink = event.target.closest('a.js-login-required');
                 if (guardedLink) {
                     event.preventDefault();
+                    const hadAuthBeforeCheck = isAuthenticated;
                     const authNow = await refreshAuthState();
                     const forceLogin = guardedLink.dataset.forceLogin === '1';
-                    const isInactive = (Date.now() - lastServerActivityAt) >= sessionTimeoutMs;
-                    const shouldPromptLogin = forceLogin || !authNow || isInactive;
+                    const isSessionExpired = hadAuthBeforeCheck && !authNow;
+                    const shouldPromptLogin = forceLogin || !authNow;
 
                     if (shouldPromptLogin) {
                         showLoginAlert(
-                            isInactive
+                            isSessionExpired
                                 ? 'Your session expired after 15 minutes of inactivity. Please login again.'
                                 : (guardedLink.dataset.loginMessage || 'Please login first.'),
                             guardedLink.href
@@ -260,6 +261,28 @@
                 }
 
                 const button = event.target.closest('#load-more-cards');
+                const deleteForm = event.target.closest('form.js-confirm-delete');
+                const paginationLink = event.target.closest('.cards-pagination a');
+
+                if (deleteForm) {
+                    if (!window.confirm('Are you sure you want to delete this card?')) {
+                        event.preventDefault();
+                    }
+
+                    return;
+                }
+
+                if (paginationLink) {
+                    event.preventDefault();
+                    fetchHtml(paginationLink.href)
+                        .then((html) => {
+                            cardsContainer.innerHTML = html;
+                        })
+                        .catch((error) => {
+                            console.error(error);
+                        });
+                    return;
+                }
 
                 if (!button) {
                     return;

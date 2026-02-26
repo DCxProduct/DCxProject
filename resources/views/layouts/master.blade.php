@@ -41,11 +41,18 @@
             box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
             transition: transform 0.25s ease, box-shadow 0.25s ease;
             transition: 0.3s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
         .card-media {
             background: #ffffff;
             padding: 12px 12px 0;
+            min-height: 174px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .card-image {
@@ -67,6 +74,12 @@
             letter-spacing: 0.1px;
             font-size: 1.05rem;
             color: #0f172a;
+            display: -webkit-box;
+            -webkit-box-orient: vertical;
+            -webkit-line-clamp: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
         }
 
         @media (min-width: 992px) {
@@ -78,6 +91,61 @@
         .card-body {
             padding-top: 10px;
             padding-bottom: 16px;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            gap: 6px;
+        }
+
+        .card-description {
+            color: #64748b;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            min-height: 5.2em;
+            max-height: 5.2em;
+            overflow-y: auto;
+            overflow-x: hidden;
+            display: block;
+            word-break: break-word;
+            margin: 0;
+            padding-right: 4px;
+        }
+
+        .cards-page-btn {
+            min-width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            border: 1px solid #d8dee6;
+            background: #ffffff;
+            color: #1f2937;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            text-decoration: none;
+            padding: 0 10px;
+            line-height: 1;
+        }
+
+        .cards-page-btn.is-active {
+            background: #2f80ed;
+            border-color: #2f80ed;
+            color: #ffffff;
+        }
+
+        .cards-page-btn.is-disabled {
+            color: #9ca3af;
+            background: #f8fafc;
+        }
+
+        .cards-page-btn.is-dots {
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .cards-pagination-meta {
+            color: #111827;
         }
 
         .footer {

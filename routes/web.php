@@ -14,33 +14,6 @@ use App\Models\Card;
 */
 Route::get('/', function () {
     $query = request('q');
-
-    $cards = Card::query()
-        ->when($query, function ($q) use ($query) {
-            $q->where('name', 'like', '%' . $query . '%');
-        })
-        ->orderByRaw('shape_number IS NULL')
-        ->orderBy('shape_number')
-        ->latest('id')
-        ->paginate(12)
-        ->withQueryString();
-
-    if (request()->ajax()) {
-        return view('public.partials.cards', compact('cards'))->render();
-    }
-
-    return view('public.home', compact('cards', 'query'));
-})->middleware('user.timeout');
-
-Route::get('/project/{slug}', function ($slug) {
-    return view('public.project-detail', compact('slug'));
-});
-
-Route::get('/cards/{card}/open', function (Card $card) {
-    if (!$card->link_url) {
-        return redirect('/');
-    }
-
     $user = auth()->user();
     $configuredAdminEmail = (string) config('app.admin_email');
     $isAdmin = $user
@@ -50,14 +23,30 @@ Route::get('/cards/{card}/open', function (Card $card) {
             || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
         );
 
-    if ($card->require_login && $isAdmin) {
-        Auth::logout();
-        request()->session()->invalidate();
-        request()->session()->regenerateToken();
+    $cards = Card::query()
+        ->when($query, function ($q) use ($query) {
+            $q->where('name', 'like', '%' . $query . '%');
+        })
+        ->orderByRaw('shape_number IS NULL')
+        ->orderBy('shape_number')
+        ->latest('id')
+        ->paginate(8)
+        ->withQueryString();
 
-        return redirect()->route('user.login', [
-            'next' => "/cards/{$card->id}/open",
-        ]);
+    if (request()->ajax()) {
+        return view('public.partials.cards', compact('cards', 'isAdmin'))->render();
+    }
+
+    return view('public.home', compact('cards', 'query', 'isAdmin'));
+})->middleware('user.timeout');
+
+Route::get('/project/{slug}', function ($slug) {
+    return view('public.project-detail', compact('slug'));
+});
+
+Route::get('/cards/{card}/open', function (Card $card) {
+    if (!$card->link_url) {
+        return redirect('/');
     }
 
     $currentPath = "/cards/{$card->id}/open";
@@ -96,14 +85,10 @@ Route::get('/auth/status', function () {
             'nextPath' => $nextPath,
         ])->render(),
     ]);
-})->name('auth.status');
+})->middleware('user.timeout')->name('auth.status');
 
 Route::get('/user/login', function () {
     $next = request()->query('next');
-
-    if (Auth::guard('admin')->check()) {
-        Auth::guard('admin')->logout();
-    }
 
     if (Auth::check()) {
         Auth::logout();

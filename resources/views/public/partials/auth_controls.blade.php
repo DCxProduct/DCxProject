@@ -8,7 +8,15 @@
     @php
         $avatarPath = $loggedUser->avatarRelativePath();
         $avatarUrl = $avatarPath ? asset($avatarPath) : null;
+        $configuredAdminEmail = (string) config('app.admin_email');
+        $isAdmin = (int) $loggedUser->id === 1
+            || strtolower((string) $loggedUser->name) === 'admin'
+            || ($configuredAdminEmail !== '' && strtolower((string) $loggedUser->email) === strtolower($configuredAdminEmail));
     @endphp
+
+    @if ($isAdmin)
+        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-primary btn-sm">Manage Users</a>
+    @endif
 
     <div class="account-menu" data-account-menu>
         <button type="button" class="account-trigger" data-account-toggle aria-expanded="false" aria-label="Open user menu">

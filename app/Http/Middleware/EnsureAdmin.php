@@ -11,18 +11,18 @@ class EnsureAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        $user = Auth::guard('admin')->user();
+        $user = Auth::user();
         $configuredAdminEmail = (string) config('app.admin_email');
 
         $isAdmin = $user
             && (
-                $user->id === 1
+                (int) $user->id === 1
                 || strtolower((string) $user->name) === 'admin'
                 || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
             );
 
         if (!$isAdmin) {
-            return redirect('/login');
+            return redirect('/')->with('error', 'You are not allowed to access admin pages.');
         }
 
         return $next($request);
