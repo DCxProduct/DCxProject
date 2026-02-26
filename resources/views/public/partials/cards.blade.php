@@ -1,14 +1,18 @@
 <div id="cards-grid" class="row g-3">
     @forelse ($cards as $card)
-        <div class="col-12 col-sm-6 col-lg-3">
+        @php
+            $colClass = !empty($isFolderView) ? 'col-12 col-sm-6 col-lg-4' : 'col-12 col-sm-6 col-lg-3';
+        @endphp
+        <div class="{{ $colClass }}">
             <div class="card project-card text-center">
                 @php
                     $isAdmin = (bool) ($isAdmin ?? false);
                     $imageSrc = $card->image_path ? asset($card->image_path) : asset('img/download.png');
                     $isProtectedCard = (bool) $card->require_login;
                     $requiresLogin = $isProtectedCard && auth()->guest();
+                    $destinationType = $card->destination_type ?? 'url';
                     $cardUrl = route('cards.open', $card);
-                    $openTarget = $card->link_url ? '_blank' : '_self';
+                    $openTarget = $destinationType === 'url' && $card->link_url ? '_blank' : '_self';
                 @endphp
                 <div class="card-media position-relative">
                     @if ($isAdmin)
@@ -24,9 +28,12 @@
 
                     <a
                         href="{{ $cardUrl }}"
-                        class="text-decoration-none text-dark{{ $isProtectedCard ? ' js-login-required' : '' }}"
+                        class="text-decoration-none text-dark js-card-open-link{{ $isProtectedCard ? ' js-login-required' : '' }}"
                         target="{{ $openTarget }}"
                         rel="noopener noreferrer"
+                        data-destination-type="{{ $destinationType }}"
+                        data-folder-id="{{ $destinationType === 'folder' ? $card->id : '' }}"
+                        data-card-name="{{ $card->name }}"
                         @if ($isProtectedCard)
                             data-login-message="Please login first to open this Application!"
                             data-force-login="{{ $requiresLogin ? '1' : '0' }}"

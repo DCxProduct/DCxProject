@@ -14,6 +14,9 @@ use App\Models\Card;
 */
 Route::get('/', function () {
     $query = request('q');
+    $folderId = request('folder');
+    $folderCard = null;
+    $isFolderView = false;
     $user = auth()->user();
     $configuredAdminEmail = (string) config('app.admin_email');
     $isAdmin = $user
@@ -23,38 +26,72 @@ Route::get('/', function () {
             || ($configuredAdminEmail !== '' && strtolower((string) $user->email) === strtolower($configuredAdminEmail))
         );
 
-    $cards = Card::query()
+    $cardsQuery = Card::query();
+    $isAjaxRequest = request()->ajax();
+
+    if ($folderId && !$isAjaxRequest) {
+        return redirect('/');
+    }
+
+    if ($folderId && $isAjaxRequest) {
+        $folderCard = Card::query()->find($folderId);
+
+        if (!$folderCard || ($folderCard->destination_type ?? 'url') !== 'folder') {
+            return response('<div class="alert alert-info mb-0">No Applications found!</div>', 200);
+        }
+
+        if ($folderCard->require_login && auth()->guest()) {
+            return response('<div class="alert alert-warning mb-0">Please login first to open this Application!</div>', 200);
+        }
+
+        $cardsQuery->where('parent_id', $folderCard->id);
+        $isFolderView = true;
+    } else {
+        $cardsQuery->whereNull('parent_id');
+    }
+
+    $perPage = $isFolderView ? 3 : 8;
+
+    $cards = $cardsQuery
         ->when($query, function ($q) use ($query) {
             $q->where('name', 'like', '%' . $query . '%');
         })
         ->orderByRaw('shape_number IS NULL')
         ->orderBy('shape_number')
         ->latest('id')
-        ->paginate(8)
+        ->paginate($perPage)
         ->withQueryString();
 
     if (request()->ajax()) {
-        return view('public.partials.cards', compact('cards', 'isAdmin'))->render();
+        return view('public.partials.cards', compact('cards', 'isAdmin', 'isFolderView'))->render();
     }
 
-    return view('public.home', compact('cards', 'query', 'isAdmin'));
+    return view('public.home', compact('cards', 'query', 'isAdmin', 'folderCard', 'isFolderView'));
 })->middleware('user.timeout');
 
 Route::get('/project/{slug}', function ($slug) {
     return view('public.project-detail', compact('slug'));
 });
 
-Route::get('/cards/{card}/open', function (Card $card) {
-    if (!$card->link_url) {
-        return redirect('/');
-    }
+Route::get('/folders/{card}', function (Card $card) {
+    return redirect()->route('cards.open', $card);
+})->middleware('user.timeout')->name('folders.show');
 
+Route::get('/cards/{card}/open', function (Card $card) {
     $currentPath = "/cards/{$card->id}/open";
 
     if ($card->require_login && auth()->guest()) {
         return redirect()->route('user.login', [
             'next' => $currentPath,
         ]);
+    }
+
+    if (($card->destination_type ?? 'url') === 'folder') {
+        return redirect('/');
+    }
+
+    if (!$card->link_url) {
+        return redirect('/');
     }
 
     return redirect()->away($card->link_url);

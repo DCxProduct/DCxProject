@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Home')</title>
-    <link rel="icon" type="image/png" href="{{ asset('img/images (1).png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('img/dcx.png') }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
@@ -255,7 +255,7 @@
         <div class="container">
             <!-- Logo -->
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="{{ asset('img/images (1).png') }}" height="36" class="me-2">
+                <img src="{{ asset('img/logo-dcx.png') }}" height="36" class="me-2">
                 
             </a>
             

@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'DCX')</title>
-    <link rel="icon" type="image/png" href="{{ asset('img/images (1).png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('img/dcx.png') }}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
@@ -299,7 +299,7 @@
     <nav class="navbar navbar-light bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="{{ asset('img/images (1).png') }}" height="36" class="me-2" alt="DCX logo">
+                <img src="{{ asset('img/logo-dcx.png') }}" height="36" class="me-2" alt="DCX logo">
             </a>
 
             <div id="public-auth-controls" class="d-flex align-items-center gap-2">

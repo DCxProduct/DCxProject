@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Card;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use RuntimeException;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
@@ -24,22 +25,20 @@ class CardController extends Controller
 
     public function create()
     {
-        return view('admins.cards.create');
+        $folderOptions = $this->getFolderOptions();
+
+        return view('admins.cards.create', compact('folderOptions'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'shape_number' => ['nullable', 'integer', 'min:0', Rule::unique('cards', 'shape_number')],
-            'description' => ['nullable', 'string', 'max:130'],
-            'link_url' => ['nullable', 'url', 'max:255'],
-            'require_login' => ['nullable', 'boolean'],
-            'image' => ['nullable', 'image', 'max:2048'],
-        ], [
-            'shape_number.unique' => 'Order Number already exists.',
-        ]);
+        $data = $this->validateCard($request);
         $data['require_login'] = $request->boolean('require_login');
+        $data['parent_id'] = $request->filled('parent_id') ? (int) $request->input('parent_id') : null;
+
+        if (($data['destination_type'] ?? 'url') === 'folder') {
+            $data['link_url'] = null;
+        }
 
         try {
             $data['image_path'] = $this->handleUpload($request);
@@ -58,7 +57,9 @@ class CardController extends Controller
 
     public function edit(Card $card)
     {
-        return view('admins.cards.edit', compact('card'));
+        $folderOptions = $this->getFolderOptions($card->id);
+
+        return view('admins.cards.edit', compact('card', 'folderOptions'));
     }
 
     public function show(Card $card)
@@ -68,17 +69,13 @@ class CardController extends Controller
 
     public function update(Request $request, Card $card)
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'shape_number' => ['nullable', 'integer', 'min:0', Rule::unique('cards', 'shape_number')->ignore($card->id)],
-            'description' => ['nullable', 'string', 'max:130'],
-            'link_url' => ['nullable', 'url', 'max:255'],
-            'require_login' => ['nullable', 'boolean'],
-            'image' => ['nullable', 'image', 'max:2048'],
-        ], [
-            'shape_number.unique' => 'Order Number already exists.',
-        ]);
+        $data = $this->validateCard($request, $card);
         $data['require_login'] = $request->boolean('require_login');
+        $data['parent_id'] = $request->filled('parent_id') ? (int) $request->input('parent_id') : null;
+
+        if (($data['destination_type'] ?? 'url') === 'folder') {
+            $data['link_url'] = null;
+        }
 
         try {
             $newImagePath = $this->handleUpload($request);
@@ -143,5 +140,104 @@ class CardController extends Controller
         if (is_file($fullPath)) {
             unlink($fullPath);
         }
+    }
+
+    private function validateCard(Request $request, ?Card $card = null): array
+    {
+        $parentId = $request->filled('parent_id') ? (int) $request->input('parent_id') : null;
+
+        $shapeNumberUniqueRule = Rule::unique('cards', 'shape_number')
+            ->where(function ($query) use ($parentId) {
+                if ($parentId === null) {
+                    $query->whereNull('parent_id');
+                    return;
+                }
+
+                $query->where('parent_id', $parentId);
+            })
+            ->ignore($card?->id);
+
+        $rules = [
+            'name' => ['required', 'string', 'max:255'],
+            'shape_number' => [
+                'nullable',
+                'integer',
+                'min:0',
+                $shapeNumberUniqueRule,
+            ],
+            'description' => ['nullable', 'string', 'max:130'],
+            'destination_type' => ['required', Rule::in(['url', 'folder'])],
+            'parent_id' => ['nullable', 'integer', 'exists:cards,id'],
+            'link_url' => $request->input('destination_type') === 'url'
+                ? ['required', 'url', 'max:255']
+                : ['nullable', 'url', 'max:255'],
+            'require_login' => ['nullable', 'boolean'],
+            'image' => ['nullable', 'image', 'max:2048'],
+        ];
+
+        $validator = Validator::make($request->all(), $rules, [
+            'shape_number.unique' => 'Order Number already exists in this dashboard/folder.',
+            'link_url.required' => 'The Link URL field is required when destination is URL.',
+        ]);
+
+        $validator->after(function ($validator) use ($request, $card) {
+            if (!$request->filled('parent_id')) {
+                return;
+            }
+
+            $parentId = (int) $request->input('parent_id');
+            $parentCard = Card::query()->find($parentId);
+
+            if (!$parentCard || ($parentCard->destination_type ?? 'url') !== 'folder') {
+                $validator->errors()->add('parent_id', 'Selected parent must be a folder.');
+                return;
+            }
+
+            if ($card && $parentId === (int) $card->id) {
+                $validator->errors()->add('parent_id', 'A card cannot be its own parent.');
+                return;
+            }
+
+            if ($card && $this->isCardInDescendantTree($card->id, $parentId)) {
+                $validator->errors()->add('parent_id', 'Invalid parent folder selection.');
+            }
+        });
+
+        return $validator->validate();
+    }
+
+    private function getFolderOptions(?int $excludeCardId = null)
+    {
+        return Card::query()
+            ->where('destination_type', 'folder')
+            ->when($excludeCardId, fn ($q) => $q->where('id', '!=', $excludeCardId))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
+    private function isCardInDescendantTree(int $cardId, int $candidateParentId): bool
+    {
+        $visited = [];
+        $currentId = $candidateParentId;
+
+        while ($currentId) {
+            if ($currentId === $cardId) {
+                return true;
+            }
+
+            if (in_array($currentId, $visited, true)) {
+                return true;
+            }
+
+            $visited[] = $currentId;
+
+            $nextParentId = Card::query()
+                ->whereKey($currentId)
+                ->value('parent_id');
+
+            $currentId = $nextParentId ? (int) $nextParentId : 0;
+        }
+
+        return false;
     }
 }

@@ -16,7 +16,7 @@
     </div>
 
     <!-- CARDS -->
-    <div class="container my-5">
+    <div id="cards-section" class="container my-5">
         <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
             <h4 class="fw-bold mb-0">Latest Application</h4>
             <div class="d-flex gap-2">
@@ -66,6 +66,83 @@
             margin: 0;
             color: #334155;
         }
+
+        .folder-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 17, 29, 0.38);
+            backdrop-filter: blur(3px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            padding: 18px;
+        }
+
+        .folder-modal-overlay.is-visible {
+            display: flex;
+        }
+
+        .folder-modal-dialog {
+            width: min(1180px, 96vw);
+            max-height: 92vh;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.28);
+            overflow: hidden;
+            transform: translateY(8px) scale(0.985);
+            transition: transform 0.2s ease;
+        }
+
+        .folder-modal-overlay.is-visible .folder-modal-dialog {
+            transform: translateY(0) scale(1);
+        }
+
+        .folder-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .folder-modal-title {
+            margin: 0;
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        .folder-modal-close {
+            border: 0;
+            background: transparent;
+            color: #475569;
+            font-size: 1.6rem;
+            line-height: 1;
+            padding: 0 4px;
+            cursor: pointer;
+        }
+
+        .folder-modal-body {
+            background: #eef2f5;
+            padding: 18px;
+            overflow-y: auto;
+            max-height: calc(92vh - 64px);
+        }
+
+        .folder-modal-loading {
+            min-height: 210px;
+            display: grid;
+            place-items: center;
+            color: #334155;
+        }
+
+        @media (min-width: 992px) {
+            .folder-modal-body .col-lg-3 {
+                width: 33.333333%;
+            }
+        }
     </style>
 
     <div id="login-alert-overlay" class="login-alert-overlay" aria-hidden="true">
@@ -79,6 +156,23 @@
         </div>
     </div>
 
+    <div id="folder-modal-overlay" class="folder-modal-overlay" aria-hidden="true">
+        <div class="folder-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="folder-modal-title">
+            <div class="folder-modal-header">
+                <h5 id="folder-modal-title" class="folder-modal-title">Folder Applications</h5>
+                <button type="button" id="folder-modal-close" class="folder-modal-close" aria-label="Close">&times;</button>
+            </div>
+            <div id="folder-modal-body" class="folder-modal-body">
+                <div class="folder-modal-loading">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary mb-2" role="status" aria-hidden="true"></div>
+                        <div>Loading folder...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const searchInput = document.getElementById('card-search-input');
         const searchForm = document.getElementById('card-search-form');
@@ -88,12 +182,28 @@
         const loginAlertText = document.getElementById('login-alert-text');
         const loginAlertLogin = document.getElementById('login-alert-login');
         const loginAlertCancel = document.getElementById('login-alert-cancel');
+        const folderModalOverlay = document.getElementById('folder-modal-overlay');
+        const folderModalTitle = document.getElementById('folder-modal-title');
+        const folderModalBody = document.getElementById('folder-modal-body');
+        const folderModalClose = document.getElementById('folder-modal-close');
+
         let isAuthenticated = @json(auth()->check());
         let pendingLoginUrl = null;
         let searchTimer;
-        let activeController;
+        let mainController;
+        let modalController;
 
         if (searchInput && searchForm && cardsContainer) {
+            const fetchHtml = (url, signal = null) => {
+                return fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'text/html',
+                    },
+                    signal,
+                }).then((response) => response.text());
+            };
+
             const showLoginAlert = (message, loginUrl = null) => {
                 if (!loginAlertOverlay || !loginAlertText) {
                     return;
@@ -115,47 +225,44 @@
                 pendingLoginUrl = null;
             };
 
-            if (loginAlertLogin) {
-                loginAlertLogin.addEventListener('click', () => {
-                    if (pendingLoginUrl) {
-                        const url = new URL(pendingLoginUrl, window.location.origin);
-                        const nextPath = `${url.pathname}${url.search}`;
-                        const loginUrl = `/user/login?next=${encodeURIComponent(nextPath)}`;
-                        window.open(loginUrl, '_blank', 'noopener');
-                        hideLoginAlert();
-                        return;
-                    }
-
-                    hideLoginAlert();
-                });
-            }
-
-            if (loginAlertCancel) {
-                loginAlertCancel.addEventListener('click', hideLoginAlert);
-            }
-
-            if (loginAlertOverlay) {
-                loginAlertOverlay.addEventListener('click', (event) => {
-                    if (event.target === loginAlertOverlay) {
-                        hideLoginAlert();
-                    }
-                });
-            }
-
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') {
-                    hideLoginAlert();
+            const showFolderModal = () => {
+                if (!folderModalOverlay) {
+                    return;
                 }
-            });
 
-            const fetchHtml = (url, signal = null) => {
-                return fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'text/html',
-                    },
-                    signal,
-                }).then((response) => response.text());
+                folderModalOverlay.classList.add('is-visible');
+                folderModalOverlay.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('overflow-hidden');
+            };
+
+            const hideFolderModal = () => {
+                if (!folderModalOverlay) {
+                    return;
+                }
+
+                if (modalController) {
+                    modalController.abort();
+                    modalController = null;
+                }
+
+                folderModalOverlay.classList.remove('is-visible');
+                folderModalOverlay.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('overflow-hidden');
+            };
+
+            const setFolderModalLoading = () => {
+                if (!folderModalBody) {
+                    return;
+                }
+
+                folderModalBody.innerHTML = `
+                    <div class="folder-modal-loading">
+                        <div class="text-center">
+                            <div class="spinner-border text-primary mb-2" role="status" aria-hidden="true"></div>
+                            <div>Loading folder...</div>
+                        </div>
+                    </div>
+                `;
             };
 
             const refreshAuthState = async () => {
@@ -172,7 +279,6 @@
                     }
 
                     const data = await response.json();
-                    const wasAuthenticated = isAuthenticated;
                     isAuthenticated = !!data.authenticated;
 
                     if (authControlsContainer && typeof data.controls_html === 'string') {
@@ -185,22 +291,14 @@
                 }
             };
 
-            const fetchCards = () => {
-                const params = new URLSearchParams();
-                const value = searchInput.value.trim();
-
-                if (value !== '') {
-                    params.set('q', value);
+            const loadMainCards = (url) => {
+                if (mainController) {
+                    mainController.abort();
                 }
 
-                if (activeController) {
-                    activeController.abort();
-                }
+                mainController = new AbortController();
 
-                activeController = new AbortController();
-                const url = `${searchForm.action}?${params.toString()}`;
-
-                fetchHtml(url, activeController.signal)
+                return fetchHtml(url, mainController.signal)
                     .then((html) => {
                         cardsContainer.innerHTML = html;
                     })
@@ -209,6 +307,167 @@
                             console.error(error);
                         }
                     });
+            };
+
+            const buildMainSearchUrl = () => {
+                const params = new URLSearchParams();
+                const q = searchInput.value.trim();
+
+                if (q !== '') {
+                    params.set('q', q);
+                }
+
+                const queryString = params.toString();
+                return queryString ? `${searchForm.action}?${queryString}` : searchForm.action;
+            };
+
+            const loadFolderCards = (folderId, folderName, explicitUrl = null) => {
+                if (!folderModalBody) {
+                    return;
+                }
+
+                if (folderModalTitle) {
+                    folderModalTitle.textContent = folderName ? `Folder: ${folderName}` : 'Folder Applications';
+                }
+
+                if (modalController) {
+                    modalController.abort();
+                }
+
+                modalController = new AbortController();
+                setFolderModalLoading();
+                showFolderModal();
+
+                const url = explicitUrl || `${searchForm.action}?folder=${encodeURIComponent(folderId)}`;
+
+                return fetchHtml(url, modalController.signal)
+                    .then((html) => {
+                        folderModalBody.innerHTML = html;
+                    })
+                    .catch((error) => {
+                        if (error.name !== 'AbortError') {
+                            folderModalBody.innerHTML = '<div class="alert alert-danger mb-0">Failed to load folder cards.</div>';
+                        }
+                    });
+            };
+
+            const openFolderFromLink = (cardLink) => {
+                const folderId = cardLink?.dataset?.folderId || '';
+                const folderName = cardLink?.dataset?.cardName || 'Folder';
+                if (!folderId) {
+                    return;
+                }
+
+                loadFolderCards(folderId, folderName);
+            };
+
+            const handleCardOpen = async (event, rootContainer) => {
+                const cardLink = event.target.closest('a.js-card-open-link');
+                if (!cardLink || !rootContainer.contains(cardLink)) {
+                    return false;
+                }
+
+                const isFolderDestination = cardLink.dataset.destinationType === 'folder';
+                const guarded = cardLink.classList.contains('js-login-required');
+
+                if (!guarded) {
+                    if (isFolderDestination) {
+                        event.preventDefault();
+                        openFolderFromLink(cardLink);
+                        return true;
+                    }
+                    return false;
+                }
+
+                event.preventDefault();
+                const forceLogin = cardLink.dataset.forceLogin === '1';
+
+                if (isAuthenticated && !forceLogin) {
+                    if (isFolderDestination) {
+                        openFolderFromLink(cardLink);
+                    } else if (cardLink.target === '_blank') {
+                        window.open(cardLink.href, '_blank', 'noopener');
+                    } else {
+                        window.location.href = cardLink.href;
+                    }
+                    return true;
+                }
+
+                const hadAuthBeforeCheck = isAuthenticated;
+                const authNow = await refreshAuthState();
+                const isSessionExpired = hadAuthBeforeCheck && !authNow;
+                const shouldPromptLogin = forceLogin || !authNow;
+
+                if (shouldPromptLogin) {
+                    showLoginAlert(
+                        isSessionExpired
+                            ? 'Your session expired after 15 minutes of inactivity. Please login again.'
+                            : (cardLink.dataset.loginMessage || 'Please login first.'),
+                        cardLink.href
+                    );
+                    return true;
+                }
+
+                if (isFolderDestination) {
+                    openFolderFromLink(cardLink);
+                } else if (cardLink.target === '_blank') {
+                    window.open(cardLink.href, '_blank', 'noopener');
+                } else {
+                    window.location.href = cardLink.href;
+                }
+
+                return true;
+            };
+
+            if (loginAlertLogin) {
+                loginAlertLogin.addEventListener('click', () => {
+                    if (!pendingLoginUrl) {
+                        hideLoginAlert();
+                        return;
+                    }
+
+                    const url = new URL(pendingLoginUrl, window.location.origin);
+                    const nextPath = `${url.pathname}${url.search}`;
+                    const loginUrl = `/user/login?next=${encodeURIComponent(nextPath)}`;
+                    window.open(loginUrl, '_blank', 'noopener');
+                    hideLoginAlert();
+                });
+            }
+
+            if (loginAlertCancel) {
+                loginAlertCancel.addEventListener('click', hideLoginAlert);
+            }
+
+            if (loginAlertOverlay) {
+                loginAlertOverlay.addEventListener('click', (event) => {
+                    if (event.target === loginAlertOverlay) {
+                        hideLoginAlert();
+                    }
+                });
+            }
+
+            if (folderModalClose) {
+                folderModalClose.addEventListener('click', hideFolderModal);
+            }
+
+            if (folderModalOverlay) {
+                folderModalOverlay.addEventListener('click', (event) => {
+                    if (event.target === folderModalOverlay) {
+                        hideFolderModal();
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    hideLoginAlert();
+                    hideFolderModal();
+                }
+            });
+
+            const fetchCards = () => {
+                const url = buildMainSearchUrl();
+                loadMainCards(url);
             };
 
             searchForm.addEventListener('submit', (e) => {
@@ -221,10 +480,7 @@
                 searchTimer = setTimeout(fetchCards, 300);
             });
 
-            window.addEventListener('focus', () => {
-                refreshAuthState();
-            });
-
+            window.addEventListener('focus', refreshAuthState);
             document.addEventListener('visibilitychange', () => {
                 if (!document.hidden) {
                     refreshAuthState();
@@ -232,35 +488,10 @@
             });
 
             cardsContainer.addEventListener('click', async (event) => {
-                const guardedLink = event.target.closest('a.js-login-required');
-                if (guardedLink) {
-                    event.preventDefault();
-                    const hadAuthBeforeCheck = isAuthenticated;
-                    const authNow = await refreshAuthState();
-                    const forceLogin = guardedLink.dataset.forceLogin === '1';
-                    const isSessionExpired = hadAuthBeforeCheck && !authNow;
-                    const shouldPromptLogin = forceLogin || !authNow;
-
-                    if (shouldPromptLogin) {
-                        showLoginAlert(
-                            isSessionExpired
-                                ? 'Your session expired after 15 minutes of inactivity. Please login again.'
-                                : (guardedLink.dataset.loginMessage || 'Please login first.'),
-                            guardedLink.href
-                        );
-                        return;
-                    }
-
-                    if (guardedLink.target === '_blank') {
-                        window.open(guardedLink.href, '_blank', 'noopener');
-                    } else {
-                        window.location.href = guardedLink.href;
-                    }
-
+                if (await handleCardOpen(event, cardsContainer)) {
                     return;
                 }
 
-                const button = event.target.closest('#load-more-cards');
                 const deleteForm = event.target.closest('form.js-confirm-delete');
                 const paginationLink = event.target.closest('.cards-pagination a');
 
@@ -268,63 +499,43 @@
                     if (!window.confirm('Are you sure you want to delete this card?')) {
                         event.preventDefault();
                     }
-
                     return;
                 }
 
                 if (paginationLink) {
                     event.preventDefault();
-                    fetchHtml(paginationLink.href)
-                        .then((html) => {
-                            cardsContainer.innerHTML = html;
-                        })
-                        .catch((error) => {
-                            console.error(error);
-                        });
-                    return;
+                    loadMainCards(paginationLink.href);
                 }
-
-                if (!button) {
-                    return;
-                }
-
-                const nextPageUrl = button.dataset.nextPage;
-                if (!nextPageUrl) {
-                    return;
-                }
-
-                button.disabled = true;
-                button.textContent = 'Loading...';
-
-                fetchHtml(nextPageUrl)
-                    .then((html) => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, 'text/html');
-                        const nextGrid = doc.getElementById('cards-grid');
-                        const currentGrid = cardsContainer.querySelector('#cards-grid');
-
-                        if (nextGrid && currentGrid) {
-                            nextGrid.querySelectorAll(':scope > *').forEach((item) => {
-                                currentGrid.appendChild(item);
-                            });
-                        }
-
-                        const nextButton = doc.getElementById('load-more-cards');
-
-                        if (nextButton && nextButton.dataset.nextPage) {
-                            button.dataset.nextPage = nextButton.dataset.nextPage;
-                            button.disabled = false;
-                            button.textContent = 'See more';
-                        } else {
-                            button.closest('#cards-load-more-wrap')?.remove();
-                        }
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                        button.disabled = false;
-                        button.textContent = 'See more';
-                    });
             });
+
+            if (folderModalBody) {
+                folderModalBody.addEventListener('click', async (event) => {
+                    if (await handleCardOpen(event, folderModalBody)) {
+                        return;
+                    }
+
+                    const deleteForm = event.target.closest('form.js-confirm-delete');
+                    const paginationLink = event.target.closest('.cards-pagination a');
+
+                    if (deleteForm) {
+                        if (!window.confirm('Are you sure you want to delete this card?')) {
+                            event.preventDefault();
+                        }
+                        return;
+                    }
+
+                    if (paginationLink) {
+                        event.preventDefault();
+                        const parsed = new URL(paginationLink.href, window.location.origin);
+                        const params = new URLSearchParams(parsed.search);
+                        const folderId = params.get('folder');
+                        const folderName = folderModalTitle ? folderModalTitle.textContent.replace(/^Folder:\s*/, '') : 'Folder';
+                        if (folderId) {
+                            loadFolderCards(folderId, folderName, paginationLink.href);
+                        }
+                    }
+                });
+            }
         }
     </script>
 
