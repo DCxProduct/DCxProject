@@ -26,17 +26,4 @@
 
         @include('public.partials.cards')
     </div>
-
-    <script>
-        document.addEventListener('submit', function(event) {
-            const form = event.target.closest('form.js-confirm-delete');
-            if (!form) {
-                return;
-            }
-
-            if (!window.confirm('Are you sure you want to delete this card?')) {
-                event.preventDefault();
-            }
-        });
-    </script>
 @endsection

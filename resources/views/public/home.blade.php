@@ -21,7 +21,7 @@
             <h4 class="fw-bold mb-0">Latest Application</h4>
             <div class="d-flex gap-2">
                 @if (($isAdmin ?? false))
-                    <a href="{{ route('admin.cards.create') }}" class="btn btn-success btn-sm">Create Card</a>
+                    <a href="{{ route('admin.cards.create') }}" class="btn btn-success btn-sm">Create Application</a>
                 @endif
             </div>
         </div>
@@ -492,15 +492,7 @@
                     return;
                 }
 
-                const deleteForm = event.target.closest('form.js-confirm-delete');
                 const paginationLink = event.target.closest('.cards-pagination a');
-
-                if (deleteForm) {
-                    if (!window.confirm('Are you sure you want to delete this card?')) {
-                        event.preventDefault();
-                    }
-                    return;
-                }
 
                 if (paginationLink) {
                     event.preventDefault();
@@ -514,15 +506,7 @@
                         return;
                     }
 
-                    const deleteForm = event.target.closest('form.js-confirm-delete');
                     const paginationLink = event.target.closest('.cards-pagination a');
-
-                    if (deleteForm) {
-                        if (!window.confirm('Are you sure you want to delete this card?')) {
-                            event.preventDefault();
-                        }
-                        return;
-                    }
 
                     if (paginationLink) {
                         event.preventDefault();

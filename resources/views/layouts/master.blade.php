@@ -288,6 +288,29 @@
             justify-content: flex-start;
         }
 
+        .confirm-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            padding: 20px;
+        }
+
+        .confirm-overlay.is-visible {
+            display: flex;
+        }
+
+        .confirm-box {
+            width: min(520px, 100%);
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+            padding: 22px 22px 18px;
+        }
+
         @media (max-width: 576px) {
             .navbar .btn {
                 width: 100%;
@@ -331,8 +354,90 @@
         </div>
     </footer>
 
+    <div id="confirm-overlay" class="confirm-overlay" aria-hidden="true">
+        <div class="confirm-box" role="alertdialog" aria-modal="true" aria-labelledby="confirm-title" aria-describedby="confirm-text">
+            <h5 id="confirm-title" class="mb-2 fw-bold">Confirm Delete</h5>
+            <p id="confirm-text" class="mb-3">Are you sure to delete this item?</p>
+            <div class="d-flex justify-content-end gap-2">
+                <button id="confirm-ok" type="button" class="btn btn-warning px-4">OK</button>
+                <button id="confirm-cancel" type="button" class="btn btn-light border px-4">Cancel</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         (() => {
+            const overlay = document.getElementById('confirm-overlay');
+            const confirmText = document.getElementById('confirm-text');
+            const confirmOk = document.getElementById('confirm-ok');
+            const confirmCancel = document.getElementById('confirm-cancel');
+            let pendingForm = null;
+            let bypassConfirm = false;
+
+            const showConfirm = (form) => {
+                if (!overlay) {
+                    return;
+                }
+
+                if (confirmText) {
+                    confirmText.textContent = form.dataset.confirmMessage || 'Are you sure to delete this item?';
+                }
+
+                pendingForm = form;
+                overlay.classList.add('is-visible');
+                overlay.setAttribute('aria-hidden', 'false');
+            };
+
+            const hideConfirm = () => {
+                if (!overlay) {
+                    return;
+                }
+
+                overlay.classList.remove('is-visible');
+                overlay.setAttribute('aria-hidden', 'true');
+                pendingForm = null;
+            };
+
+            document.addEventListener('submit', (event) => {
+                const form = event.target.closest('form.js-confirm-delete');
+                if (!form) {
+                    return;
+                }
+
+                if (bypassConfirm) {
+                    bypassConfirm = false;
+                    return;
+                }
+
+                event.preventDefault();
+                showConfirm(form);
+            });
+
+            if (confirmOk) {
+                confirmOk.addEventListener('click', () => {
+                    if (!pendingForm) {
+                        hideConfirm();
+                        return;
+                    }
+
+                    bypassConfirm = true;
+                    pendingForm.requestSubmit();
+                    hideConfirm();
+                });
+            }
+
+            if (confirmCancel) {
+                confirmCancel.addEventListener('click', hideConfirm);
+            }
+
+            if (overlay) {
+                overlay.addEventListener('click', (event) => {
+                    if (event.target === overlay) {
+                        hideConfirm();
+                    }
+                });
+            }
+
             const menuSelector = '[data-account-menu]';
             const toggleSelector = '[data-account-toggle]';
             const panelSelector = '[data-account-panel]';
@@ -377,6 +482,7 @@
 
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {
+                    hideConfirm();
                     closeAllMenus();
                 }
             });
@@ -394,4 +500,3 @@
 </body>
 
 </html>
-

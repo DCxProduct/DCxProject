@@ -71,7 +71,7 @@
                     <div class="form-check mb-4">
                         <input class="form-check-input" type="checkbox" name="require_login" id="require_login" value="1" {{ old('require_login') ? 'checked' : '' }}>
                         <label class="form-check-label" for="require_login">
-                            Require login before opening this card
+                            Require login before opening this Application
                         </label>
                     </div>
 

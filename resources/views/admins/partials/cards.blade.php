@@ -16,7 +16,7 @@
                     </a>
                     <div class="position-absolute top-0 end-0 m-2 d-flex gap-1">
                         <a href="{{ route('admin.cards.edit', $card) }}" class="btn btn-sm btn-primary">Edit</a>
-                        <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" class="d-inline js-confirm-delete">
+                        <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" class="d-inline js-confirm-delete" data-confirm-message="Are you sure to delete this application?">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -29,7 +29,7 @@
         </div>
     @empty
         <div class="col-12">
-            <div class="alert alert-info mb-0">No cards found.</div>
+            <div class="alert alert-info mb-0">No applications found.</div>
         </div>
     @endforelse
 </div>

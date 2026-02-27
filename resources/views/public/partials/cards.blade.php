@@ -18,7 +18,7 @@
                     @if ($isAdmin)
                         <div class="position-absolute top-0 end-0 mt-2 me-2 d-flex gap-1" style="z-index: 3;">
                             <a href="{{ route('admin.cards.edit', $card) }}" class="btn btn-sm btn-primary py-0 px-2">Edit</a>
-                            <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" class="d-inline js-confirm-delete">
+                            <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" class="d-inline js-confirm-delete" data-confirm-message="Are you sure to delete this application?">
                                 @csrf
                                 @method('DELETE')
                                 <button type="submit" class="btn btn-sm btn-danger py-0 px-2">Delete</button>
@@ -68,7 +68,7 @@
 
     <div class="cards-pagination mt-4">
         <div class="cards-pagination-nav d-flex flex-wrap gap-2 align-items-center">
-            @if ($cards->onFirstPage())
+            @if ($current === 1)
                 <span class="cards-page-btn is-disabled">&lsaquo;</span>
             @else
                 <a class="cards-page-btn" href="{{ $cards->previousPageUrl() }}">&lsaquo;</a>

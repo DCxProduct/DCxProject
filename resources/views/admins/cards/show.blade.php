@@ -6,7 +6,7 @@
             <h4 class="fw-bold mb-0">{{ $card->name }}</h4>
             <div class="d-flex gap-2">
                 <a href="{{ route('admin.cards.edit', $card) }}" class="btn btn-primary">Edit</a>
-                <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" class="js-confirm-delete">
+                <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" class="js-confirm-delete" data-confirm-message="Are you sure to delete this card?">
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-danger">Delete</button>
