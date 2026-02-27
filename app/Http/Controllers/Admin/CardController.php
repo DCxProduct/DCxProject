@@ -99,8 +99,27 @@ class CardController extends Controller
 
     public function destroy(Card $card)
     {
-        $this->deleteOldImage($card->image_path);
-        $card->delete();
+        $cardIdsToDelete = [$card->id];
+
+        if (($card->destination_type ?? 'url') === 'folder') {
+            // MyISAM does not enforce FK cascades; delete descendants manually.
+            $cardIdsToDelete = $this->collectDescendantCardIds($card->id);
+        } else {
+            // Guard against orphan children if parent card is removed.
+            Card::query()
+                ->where('parent_id', $card->id)
+                ->update(['parent_id' => null]);
+        }
+
+        $cardsToDelete = Card::query()
+            ->whereIn('id', $cardIdsToDelete)
+            ->get(['id', 'image_path']);
+
+        foreach ($cardsToDelete as $cardToDelete) {
+            $this->deleteOldImage($cardToDelete->image_path);
+        }
+
+        Card::query()->whereIn('id', $cardIdsToDelete)->delete();
 
         return redirect()->route('admin.cards.index')->with('success', 'Card deleted.');
     }
@@ -210,9 +229,46 @@ class CardController extends Controller
     {
         return Card::query()
             ->where('destination_type', 'folder')
+            ->where(function ($query) {
+                $query->whereNull('parent_id')
+                    ->orWhereExists(function ($subQuery) {
+                        $subQuery->selectRaw('1')
+                            ->from('cards as parent_cards')
+                            ->whereColumn('parent_cards.id', 'cards.parent_id');
+                    });
+            })
             ->when($excludeCardId, fn ($q) => $q->where('id', '!=', $excludeCardId))
             ->orderBy('name')
             ->get(['id', 'name']);
+    }
+
+    private function collectDescendantCardIds(int $rootCardId): array
+    {
+        $ids = [];
+        $stack = [$rootCardId];
+
+        while ($stack !== []) {
+            $currentId = array_pop($stack);
+            if (in_array($currentId, $ids, true)) {
+                continue;
+            }
+
+            $ids[] = $currentId;
+
+            $childIds = Card::query()
+                ->where('parent_id', $currentId)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            foreach ($childIds as $childId) {
+                if (!in_array($childId, $ids, true)) {
+                    $stack[] = $childId;
+                }
+            }
+        }
+
+        return $ids;
     }
 
     private function isCardInDescendantTree(int $cardId, int $candidateParentId): bool
