@@ -349,7 +349,7 @@
 
             <hr>
             <p class="text-center small text-muted mb-0">
-                &copy; {{ date('Y') }} DCX. All rights reserved.hello boy boy girl girl
+                &copy; {{ date('Y') }} DCX. All rights reserved.
             </p>
         </div>
     </footer>
