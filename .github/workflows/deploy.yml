@@ -19,3 +19,8 @@ jobs:
           cd /var/www/DCxProject  
           git fetch origin main    
           git reset --hard origin/main 
+          
+      - name: Fix Storage Permissions
+        run: |
+          sudo chmod -R 775 /var/www/DCxProject/storage
+          sudo chmod -R 775 /var/www/DCxProject/bootstrap/cache
