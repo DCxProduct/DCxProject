@@ -342,8 +342,8 @@
                 <div class="col-12 col-md-4 mb-3">
                     <h6 class="fw-bold">Contact</h6>
                     <p class="small text-muted mb-1">Email: nimolkhieav412@gmail.com</p>
-                    <p class="small text-muted">Phone: (855)966192521</p>
-                    <p class="small text-muted">Telegram: (855) 16 705 118</p>
+                    <p class="small text-muted">Phone: (855) 966192521</p>
+                    <p class="small text-muted">Telegram: (855) 966192521</p>
                 </div>
             </div>
 
