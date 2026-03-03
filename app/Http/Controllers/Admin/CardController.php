@@ -18,7 +18,7 @@ class CardController extends Controller
             ->orderByRaw('shape_number IS NULL')
             ->orderBy('shape_number')
             ->latest('id')
-            ->paginate(10);
+            ->paginate(16);
 
         return view('admins.cards.index', compact('cards'));
     }
@@ -26,13 +26,18 @@ class CardController extends Controller
     public function create()
     {
         $folderOptions = $this->getFolderOptions();
+        $nextShapeNumbersByParent = $this->getNextShapeNumbersByParent(
+            $folderOptions->pluck('id')->map(fn ($id) => (int) $id)->all()
+        );
 
-        return view('admins.cards.create', compact('folderOptions'));
+        return view('admins.cards.create', compact('folderOptions', 'nextShapeNumbersByParent'));
     }
 
     public function store(Request $request)
     {
         $data = $this->validateCard($request);
+        $requestedShapeNumber = $data['shape_number'] ?? null;
+        $data['shape_number'] = null;
         $data['require_login'] = $request->boolean('require_login');
         $data['parent_id'] = $request->filled('parent_id') ? (int) $request->input('parent_id') : null;
 
@@ -50,7 +55,12 @@ class CardController extends Controller
                 ]);
         }
 
-        Card::create($data);
+        $card = Card::create($data);
+        $this->resequenceScope(
+            $card->parent_id ? (int) $card->parent_id : null,
+            (int) $card->id,
+            $requestedShapeNumber !== null ? (int) $requestedShapeNumber : null
+        );
 
         return redirect()->route('admin.cards.index')->with('success', 'Card created.');
     }
@@ -69,7 +79,10 @@ class CardController extends Controller
 
     public function update(Request $request, Card $card)
     {
+        $oldParentId = $card->parent_id ? (int) $card->parent_id : null;
         $data = $this->validateCard($request, $card);
+        $requestedShapeNumber = $data['shape_number'] ?? null;
+        $data['shape_number'] = null;
         $data['require_login'] = $request->boolean('require_login');
         $data['parent_id'] = $request->filled('parent_id') ? (int) $request->input('parent_id') : null;
 
@@ -94,12 +107,24 @@ class CardController extends Controller
 
         $card->update($data);
 
+        $newParentId = $card->parent_id ? (int) $card->parent_id : null;
+        if ($oldParentId !== $newParentId) {
+            $this->resequenceScope($oldParentId);
+        }
+
+        $this->resequenceScope(
+            $newParentId,
+            (int) $card->id,
+            $requestedShapeNumber !== null ? (int) $requestedShapeNumber : null
+        );
+
         return redirect()->route('admin.cards.index')->with('success', 'Card updated.');
     }
 
     public function destroy(Card $card)
     {
         $cardIdsToDelete = [$card->id];
+        $affectedParentIds = [];
 
         if (($card->destination_type ?? 'url') === 'folder') {
             // MyISAM does not enforce FK cascades; delete descendants manually.
@@ -108,18 +133,38 @@ class CardController extends Controller
             // Guard against orphan children if parent card is removed.
             Card::query()
                 ->where('parent_id', $card->id)
-                ->update(['parent_id' => null]);
+                ->update([
+                    'parent_id' => null,
+                    'shape_number' => null,
+                ]);
+
+            $affectedParentIds[] = null;
         }
 
         $cardsToDelete = Card::query()
             ->whereIn('id', $cardIdsToDelete)
-            ->get(['id', 'image_path']);
+            ->get(['id', 'image_path', 'parent_id']);
 
         foreach ($cardsToDelete as $cardToDelete) {
             $this->deleteOldImage($cardToDelete->image_path);
+            $affectedParentIds[] = $cardToDelete->parent_id ? (int) $cardToDelete->parent_id : null;
         }
 
         Card::query()->whereIn('id', $cardIdsToDelete)->delete();
+
+        $uniqueAffectedParentIds = [];
+        foreach ($affectedParentIds as $parentId) {
+            $key = $parentId === null ? 'root' : (string) $parentId;
+            $uniqueAffectedParentIds[$key] = $parentId;
+        }
+
+        foreach ($uniqueAffectedParentIds as $parentId) {
+            if ($parentId !== null && !Card::query()->whereKey($parentId)->exists()) {
+                continue;
+            }
+
+            $this->resequenceScope($parentId);
+        }
 
         return redirect()->route('admin.cards.index')->with('success', 'Card deleted.');
     }
@@ -163,28 +208,14 @@ class CardController extends Controller
 
     private function validateCard(Request $request, ?Card $card = null): array
     {
-        $parentId = $request->filled('parent_id') ? (int) $request->input('parent_id') : null;
-
-        $shapeNumberUniqueRule = Rule::unique('cards', 'shape_number')
-            ->where(function ($query) use ($parentId) {
-                if ($parentId === null) {
-                    $query->whereNull('parent_id');
-                    return;
-                }
-
-                $query->where('parent_id', $parentId);
-            })
-            ->ignore($card?->id);
-
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'shape_number' => [
                 'nullable',
                 'integer',
-                'min:0',
-                $shapeNumberUniqueRule,
+                'min:1',
             ],
-            'description' => ['nullable', 'string', 'max:130'],
+            'description' => ['nullable', 'string', 'max:100'],
             'destination_type' => ['required', Rule::in(['url', 'folder'])],
             'parent_id' => ['nullable', 'integer', 'exists:cards,id'],
             'link_url' => $request->input('destination_type') === 'url'
@@ -195,7 +226,6 @@ class CardController extends Controller
         ];
 
         $validator = Validator::make($request->all(), $rules, [
-            'shape_number.unique' => 'Order Number already exists in this dashboard/folder.',
             'link_url.required' => 'The Link URL field is required when destination is URL.',
         ]);
 
@@ -295,5 +325,61 @@ class CardController extends Controller
         }
 
         return false;
+    }
+
+    private function resequenceScope(?int $parentId, ?int $movingCardId = null, ?int $requestedPosition = null): void
+    {
+        $cardIds = Card::query()
+            ->when(
+                $parentId === null,
+                fn ($query) => $query->whereNull('parent_id'),
+                fn ($query) => $query->where('parent_id', $parentId)
+            )
+            ->when($movingCardId !== null, fn ($query) => $query->where('id', '!=', $movingCardId))
+            ->orderByRaw('shape_number IS NULL')
+            ->orderBy('shape_number')
+            ->orderBy('id')
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        if ($movingCardId !== null) {
+            $maxPosition = count($cardIds) + 1;
+            $targetPosition = $requestedPosition ?? $maxPosition;
+            $targetPosition = max(1, min($targetPosition, $maxPosition));
+            array_splice($cardIds, $targetPosition - 1, 0, [$movingCardId]);
+        }
+
+        foreach ($cardIds as $index => $cardId) {
+            Card::query()->whereKey($cardId)->update([
+                'shape_number' => $index + 1,
+            ]);
+        }
+    }
+
+    private function getNextShapeNumber(?int $parentId): int
+    {
+        $maxShapeNumber = Card::query()
+            ->when(
+                $parentId === null,
+                fn ($query) => $query->whereNull('parent_id'),
+                fn ($query) => $query->where('parent_id', $parentId)
+            )
+            ->max('shape_number');
+
+        return ($maxShapeNumber ? (int) $maxShapeNumber : 0) + 1;
+    }
+
+    private function getNextShapeNumbersByParent(array $parentIds): array
+    {
+        $nextShapeNumbersByParent = [
+            'root' => $this->getNextShapeNumber(null),
+        ];
+
+        foreach ($parentIds as $parentId) {
+            $nextShapeNumbersByParent[(string) $parentId] = $this->getNextShapeNumber((int) $parentId);
+        }
+
+        return $nextShapeNumbersByParent;
     }
 }

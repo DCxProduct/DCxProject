@@ -20,8 +20,8 @@
 
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3" maxlength="130">{{ old('description', $card->description) }}</textarea>
-                        <div class="form-text">Maximum 130 characters.</div>
+                        <textarea name="description" class="form-control" rows="3" maxlength="100">{{ old('description', $card->description) }}</textarea>
+                        <div class="form-text">Maximum 100 characters.</div>
                         @error('description')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -29,7 +29,8 @@
 
                     <div class="mb-3">
                         <label class="form-label">Order Number</label>
-                        <input type="number" name="shape_number" class="form-control" min="0" step="1" value="{{ old('shape_number', $card->shape_number) }}">
+                        <input type="number" name="shape_number" class="form-control" min="1" step="1" value="{{ old('shape_number', $card->shape_number) }}">
+                        <div class="form-text">Leave blank to auto assign.</div>
                         @error('shape_number')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror

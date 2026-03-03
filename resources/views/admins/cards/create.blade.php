@@ -19,8 +19,8 @@
 
                     <div class="mb-3">
                         <label class="form-label">Description</label>
-                        <textarea name="description" class="form-control" rows="3" maxlength="130">{{ old('description') }}</textarea>
-                        <div class="form-text">Maximum 130 characters.</div>
+                        <textarea name="description" class="form-control" rows="3" maxlength="100">{{ old('description') }}</textarea>
+                        <div class="form-text">Maximum 100 characters.</div>
                         @error('description')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -28,7 +28,16 @@
 
                     <div class="mb-3">
                         <label class="form-label">Order Number</label>
-                        <input type="number" name="shape_number" class="form-control" min="0" step="1" value="{{ old('shape_number') }}">
+                        <input
+                            type="number"
+                            name="shape_number"
+                            id="shape_number"
+                            class="form-control"
+                            min="1"
+                            step="1"
+                            value="{{ old('shape_number', $nextShapeNumbersByParent['root'] ?? 1) }}"
+                        >
+                       
                         @error('shape_number')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -99,10 +108,31 @@
             const linkInput = document.getElementById('link_url');
             const parentFolderGroup = document.getElementById('parent_folder_group');
             const parentIdSelect = document.getElementById('parent_id');
+            const shapeNumberInput = document.getElementById('shape_number');
+            const nextShapeNumbersByParent = @json($nextShapeNumbersByParent);
+            const hasOldShapeNumber = @json(old('shape_number') !== null && old('shape_number') !== '');
+            let shapeNumberTouched = hasOldShapeNumber;
 
-            if (!destinationSelect || !linkUrlGroup || !linkInput || !parentFolderGroup || !parentIdSelect) {
+            if (!destinationSelect || !linkUrlGroup || !linkInput || !parentFolderGroup || !parentIdSelect || !shapeNumberInput) {
                 return;
             }
+
+            shapeNumberInput.addEventListener('input', () => {
+                shapeNumberTouched = shapeNumberInput.value !== '';
+            });
+
+            const autoFillShapeNumber = () => {
+                if (shapeNumberTouched) {
+                    return;
+                }
+
+                const isUrl = destinationSelect.value === 'url';
+                const parentId = isUrl ? parentIdSelect.value : '';
+                const scopeKey = parentId || 'root';
+                const nextNumber = nextShapeNumbersByParent[scopeKey] ?? nextShapeNumbersByParent.root ?? 1;
+
+                shapeNumberInput.value = String(nextNumber);
+            };
 
             const toggleDestinationFields = () => {
                 const isUrl = destinationSelect.value === 'url';
@@ -114,9 +144,12 @@
                     linkInput.value = '';
                     parentIdSelect.value = '';
                 }
+
+                autoFillShapeNumber();
             };
 
             destinationSelect.addEventListener('change', toggleDestinationFields);
+            parentIdSelect.addEventListener('change', autoFillShapeNumber);
             toggleDestinationFields();
         });
     </script>

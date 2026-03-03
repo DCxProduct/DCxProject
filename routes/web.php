@@ -50,7 +50,7 @@ Route::get('/', function () {
         $cardsQuery->whereNull('parent_id');
     }
 
-    $perPage = $isFolderView ? 3 : 8;
+    $perPage = 16;
 
     $cards = $cardsQuery
         ->when($query, function ($q) use ($query) {

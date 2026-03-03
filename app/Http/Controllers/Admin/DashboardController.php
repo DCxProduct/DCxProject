@@ -19,7 +19,7 @@ class DashboardController extends Controller
             ->orderByRaw('shape_number IS NULL')
             ->orderBy('shape_number')
             ->latest('id')
-            ->paginate(12)
+            ->paginate(16)
             ->withQueryString();
 
         if (request()->ajax()) {

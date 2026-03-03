@@ -7,7 +7,6 @@
             <div class="card project-card text-center">
                 @php
                     $isAdmin = (bool) ($isAdmin ?? false);
-                    $imageSrc = $card->image_path ? asset($card->image_path) : asset('img/download.png');
                     $isProtectedCard = (bool) $card->require_login;
                     $requiresLogin = $isProtectedCard && auth()->guest();
                     $destinationType = $card->destination_type ?? 'url';
@@ -39,7 +38,9 @@
                             data-force-login="{{ $requiresLogin ? '1' : '0' }}"
                         @endif
                     >
-                        <img src="{{ $imageSrc }}" class="card-image">
+                        @if ($card->image_path)
+                            <img src="{{ asset($card->image_path) }}" class="card-image">
+                        @endif
                     </a>
                 </div>
                 <div class="card-body text-center">

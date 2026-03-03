@@ -15,9 +15,6 @@
             @forelse ($cards as $card)
                 <div class="col-md-4">
                     <div class="card project-card shadow-sm text-center">
-                        @php
-                            $imageSrc = $card->image_path ? asset($card->image_path) : asset('img/download.png');
-                        @endphp
                         <div class="position-relative">
                             @if (!is_null($card->shape_number))
                                 <span class="position-absolute top-0 start-0 translate-middle badge rounded-pill" style="z-index: 1; background-color: #0a5f66; color: #ffffff;">
@@ -25,7 +22,9 @@
                                 </span>
                             @endif
                             <a href="{{ $card->link_url ?: route('admin.cards.show', $card) }}" target="{{ $card->link_url ? '_blank' : '_self' }}">
-                                <img src="{{ $imageSrc }}" class="card-img-top p-4">
+                                @if ($card->image_path)
+                                    <img src="{{ asset($card->image_path) }}" class="card-img-top p-4">
+                                @endif
                             </a>
                         </div>
                         <div class="card-body">

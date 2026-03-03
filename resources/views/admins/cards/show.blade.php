@@ -14,10 +14,6 @@
             </div>
         </div>
 
-        @php
-            $imageSrc = $card->image_path ? asset($card->image_path) : asset('img/download.png');
-        @endphp
-
         <div class="card shadow-sm">
             <div class="position-relative">
                 @if (!is_null($card->shape_number))
@@ -25,7 +21,9 @@
                         {{ $card->shape_number }}
                     </span>
                 @endif
-                <img src="{{ $imageSrc }}" class="card-img-top p-4">
+                @if ($card->image_path)
+                    <img src="{{ asset($card->image_path) }}" class="card-img-top p-4">
+                @endif
             </div>
             <div class="card-body">
                 <p class="text-muted mb-0">{{ $card->description }}</p>

@@ -311,6 +311,36 @@
             padding: 22px 22px 18px;
         }
 
+        .loading-alert-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1300;
+            padding: 20px;
+        }
+
+        .loading-alert-overlay.is-visible {
+            display: flex;
+        }
+
+        .loading-alert-box {
+            width: min(360px, 100%);
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.22);
+            padding: 22px 20px;
+            text-align: center;
+        }
+
+        .loading-alert-text {
+            margin-top: 10px;
+            color: #334155;
+            font-weight: 600;
+        }
+
         @media (max-width: 576px) {
             .navbar .btn {
                 width: 100%;
@@ -341,9 +371,18 @@
             <div class="row text-center text-md-start">
                 <div class="col-12 col-md-4 mb-3">
                     <h6 class="fw-bold">Contact</h6>
-                    <p class="small text-muted mb-1">Email: dane@dcresearchco.org</p>
-                    <p class="small text-muted">Phone: (855)16 705 118</p>
-                    <p class="small text-muted">Telegram: (855) 16 705 118</p>
+                    <p class="small text-muted mb-1">
+                        Email:
+                        <a href="mailto:dane@dcresearchco.org" class="footer-link js-loading-alert-trigger" data-loading-message="Opening email app..."> daneso@datacolabx.org </a>
+                    </p>
+                    <p class="small text-muted mb-1">
+                        Phone:
+                        <a href="tel:+85516705118" class="footer-link js-loading-alert-trigger" data-loading-message="Opening phone call...">(855)16 705 118</a>
+                    </p>
+                    <p class="small text-muted">
+                        Telegram:
+                        <a href="https://t.me/danenakvy" class="footer-link js-loading-alert-trigger" data-loading-message="Opening Telegram..." target="_blank" rel="noopener noreferrer">@danenakvy</a>
+                    </p>
                 </div>
             </div>
 
@@ -365,14 +404,24 @@
         </div>
     </div>
 
+    <div id="loading-alert-overlay" class="loading-alert-overlay" aria-hidden="true">
+        <div class="loading-alert-box" role="alertdialog" aria-modal="true" aria-labelledby="loading-alert-text">
+            <div class="spinner-border text-primary" role="status" aria-hidden="true"></div>
+            <div id="loading-alert-text" class="loading-alert-text">Loading...</div>
+        </div>
+    </div>
+
     <script>
         (() => {
             const overlay = document.getElementById('confirm-overlay');
             const confirmText = document.getElementById('confirm-text');
             const confirmOk = document.getElementById('confirm-ok');
             const confirmCancel = document.getElementById('confirm-cancel');
+            const loadingAlertOverlay = document.getElementById('loading-alert-overlay');
+            const loadingAlertText = document.getElementById('loading-alert-text');
             let pendingForm = null;
             let bypassConfirm = false;
+            let loadingAlertTimer = null;
 
             const showConfirm = (form) => {
                 if (!overlay) {
@@ -396,6 +445,34 @@
                 overlay.classList.remove('is-visible');
                 overlay.setAttribute('aria-hidden', 'true');
                 pendingForm = null;
+            };
+
+            const hideLoadingAlert = () => {
+                if (!loadingAlertOverlay) {
+                    return;
+                }
+
+                loadingAlertOverlay.classList.remove('is-visible');
+                loadingAlertOverlay.setAttribute('aria-hidden', 'true');
+            };
+
+            const showLoadingAlert = (message) => {
+                if (!loadingAlertOverlay || !loadingAlertText) {
+                    return;
+                }
+
+                loadingAlertText.textContent = message || 'Loading...';
+                loadingAlertOverlay.classList.add('is-visible');
+                loadingAlertOverlay.setAttribute('aria-hidden', 'false');
+
+                if (loadingAlertTimer) {
+                    clearTimeout(loadingAlertTimer);
+                }
+
+                loadingAlertTimer = setTimeout(() => {
+                    hideLoadingAlert();
+                    loadingAlertTimer = null;
+                }, 1800);
             };
 
             document.addEventListener('submit', (event) => {
@@ -437,6 +514,15 @@
                     }
                 });
             }
+
+            document.addEventListener('click', (event) => {
+                const loadingLink = event.target.closest('a.js-loading-alert-trigger');
+                if (!loadingLink) {
+                    return;
+                }
+
+                showLoadingAlert(loadingLink.dataset.loadingMessage || 'Loading...');
+            });
 
             const menuSelector = '[data-account-menu]';
             const toggleSelector = '[data-account-toggle]';
@@ -483,6 +569,7 @@
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {
                     hideConfirm();
+                    hideLoadingAlert();
                     closeAllMenus();
                 }
             });
