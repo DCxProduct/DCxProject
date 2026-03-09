@@ -6,7 +6,7 @@
 
         <div class="card shadow-sm">
             <div class="card-body">
-                <form action="{{ route('admin.cards.store') }}" method="POST" enctype="multipart/form-data">
+                <form id="card-create-form" action="{{ route('admin.cards.store') }}" method="POST" enctype="multipart/form-data">
                     @csrf
 
                     <div class="mb-3">
@@ -86,7 +86,15 @@
 
                     <div class="mb-4">
                         <label class="form-label">Upload Image</label>
-                        <input type="file" name="image" class="form-control">
+                        <input
+                            type="file"
+                            name="image"
+                            id="image"
+                            class="form-control"
+                            accept=".jpg,.jpeg,.png,.webp"
+                            required
+                        >
+                       
                         @error('image')
                             <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
@@ -109,11 +117,13 @@
             const parentFolderGroup = document.getElementById('parent_folder_group');
             const parentIdSelect = document.getElementById('parent_id');
             const shapeNumberInput = document.getElementById('shape_number');
+            const cardCreateForm = document.getElementById('card-create-form');
+            const imageInput = document.getElementById('image');
             const nextShapeNumbersByParent = @json($nextShapeNumbersByParent);
             const hasOldShapeNumber = @json(old('shape_number') !== null && old('shape_number') !== '');
             let shapeNumberTouched = hasOldShapeNumber;
 
-            if (!destinationSelect || !linkUrlGroup || !linkInput || !parentFolderGroup || !parentIdSelect || !shapeNumberInput) {
+            if (!destinationSelect || !linkUrlGroup || !linkInput || !parentFolderGroup || !parentIdSelect || !shapeNumberInput || !cardCreateForm || !imageInput) {
                 return;
             }
 
@@ -150,6 +160,15 @@
 
             destinationSelect.addEventListener('change', toggleDestinationFields);
             parentIdSelect.addEventListener('change', autoFillShapeNumber);
+
+            cardCreateForm.addEventListener('submit', (event) => {
+                if (!imageInput.files || imageInput.files.length === 0) {
+                    event.preventDefault();
+                    alert('Please upload an image before creating this application.');
+                    imageInput.focus();
+                }
+            });
+
             toggleDestinationFields();
         });
     </script>

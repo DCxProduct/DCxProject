@@ -5,6 +5,11 @@
 @endphp
 
 @if ($loggedUser)
+    <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+        <span class="theme-icon theme-icon-sun">&#9728;</span>
+        <span class="theme-icon theme-icon-moon">&#9790;</span>
+    </button>
+
     @php
         $avatarPath = $loggedUser->avatarRelativePath();
         $avatarUrl = $avatarPath ? asset($avatarPath) : null;
@@ -15,7 +20,7 @@
     @endphp
 
     @if ($isAdmin)
-        <a href="{{ route('admin.users.index') }}" class="btn btn-outline-primary btn-sm">Manage Users</a>
+        <a href="{{ route('admin.users.index') }}" class="btn btn-sm manage-users-btn">Manage Users</a>
     @endif
 
     <div class="account-menu" data-account-menu>
@@ -59,5 +64,12 @@
         </div>
     </div>
 @else
-    <a href="{{ route('user.login', ['next' => $nextPath]) }}" class="btn btn-warning btn-sm">Login</a>
+    <div class="d-flex align-items-center gap-2">
+        <button type="button" class="theme-toggle-btn" data-theme-toggle aria-label="Toggle theme" aria-pressed="false">
+            <span class="theme-icon theme-icon-sun">&#9728;</span>
+            <span class="theme-icon theme-icon-moon">&#9790;</span>
+        </button>
+        <a href="{{ route('user.login', ['next' => $nextPath]) }}" class="btn btn-warning btn-sm">Login</a>
+    </div>
 @endif
+

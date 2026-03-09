@@ -3,49 +3,73 @@
         @php
             $colClass = !empty($isFolderView) ? 'col-12 col-sm-6 col-lg-4' : 'col-12 col-sm-6 col-lg-3';
         @endphp
-        <div class="{{ $colClass }}">
-            <div class="card project-card text-center">
+        <div class="{{ $colClass }} d-flex">
+            @php
+                $isAdmin = (bool) ($isAdmin ?? false);
+                $isProtectedCard = (bool) $card->require_login;
+                $requiresLogin = $isProtectedCard && auth()->guest();
+                $destinationType = $card->destination_type ?? 'url';
+                $cardUrl = route('cards.open', $card);
+                $openTarget = $destinationType === 'url' && $card->link_url ? '_blank' : '_self';
+                $linkClasses = 'js-card-open-link' . ($isProtectedCard ? ' js-login-required' : '');
+            @endphp
+            <div class="project-card feature-card">
                 @php
-                    $isAdmin = (bool) ($isAdmin ?? false);
-                    $isProtectedCard = (bool) $card->require_login;
-                    $requiresLogin = $isProtectedCard && auth()->guest();
-                    $destinationType = $card->destination_type ?? 'url';
-                    $cardUrl = route('cards.open', $card);
-                    $openTarget = $destinationType === 'url' && $card->link_url ? '_blank' : '_self';
+                    $titleText = $card->name;
+                    $descriptionText = $card->description ?: 'Open this application to continue.';
                 @endphp
-                <div class="card-media position-relative">
-                    @if ($isAdmin)
-                        <div class="position-absolute top-0 end-0 mt-2 me-2 d-flex gap-1" style="z-index: 3;">
-                            <a href="{{ route('admin.cards.edit', $card) }}" class="btn btn-sm btn-primary py-0 px-2">Edit</a>
-                            <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" class="d-inline js-confirm-delete" data-confirm-message="Are you sure to delete this application?">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-danger py-0 px-2">Delete</button>
-                            </form>
-                        </div>
-                    @endif
 
-                    <a
-                        href="{{ $cardUrl }}"
-                        class="text-decoration-none text-dark js-card-open-link{{ $isProtectedCard ? ' js-login-required' : '' }}"
-                        target="{{ $openTarget }}"
-                        rel="noopener noreferrer"
-                        data-destination-type="{{ $destinationType }}"
-                        data-folder-id="{{ $destinationType === 'folder' ? $card->id : '' }}"
-                        data-card-name="{{ $card->name }}"
-                        @if ($isProtectedCard)
-                            data-login-message="Please login first to open this Application!"
-                            data-force-login="{{ $requiresLogin ? '1' : '0' }}"
-                        @endif
-                    >
-                        @if ($card->image_path)
-                            <img src="{{ asset($card->image_path) }}" class="card-image">
-                        @endif
-                    </a>
+                <a
+                    href="{{ $cardUrl }}"
+                    class="feature-card-click {{ $linkClasses }}"
+                    target="{{ $openTarget }}"
+                    rel="noopener noreferrer"
+                    data-destination-type="{{ $destinationType }}"
+                    data-folder-id="{{ $destinationType === 'folder' ? $card->id : '' }}"
+                    data-card-name="{{ $card->name }}"
+                    @if ($isProtectedCard)
+                        data-login-message="Please login first to open this Application!"
+                        data-force-login="{{ $requiresLogin ? '1' : '0' }}"
+                    @endif
+                    aria-label="Open {{ $card->name }}"
+                ></a>
+
+                @if ($isAdmin)
+                    <div class="feature-admin-actions d-flex gap-1">
+                        <a
+                            href="{{ route('admin.cards.edit', $card) }}"
+                            class="feature-admin-btn feature-admin-btn-edit"
+                            title="Edit"
+                            aria-label="Edit {{ $card->name }}"
+                        >
+                            <span aria-hidden="true">&#9998;</span>
+                        </a>
+                        <form action="{{ route('admin.cards.destroy', $card) }}" method="POST" class="d-inline js-confirm-delete" data-confirm-message="Are you sure to delete this application?">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="feature-admin-btn feature-admin-btn-delete" title="Delete" aria-label="Delete {{ $card->name }}">
+                                <span aria-hidden="true">&#128465;</span>
+                            </button>
+                        </form>
+                    </div>
+                @endif
+
+                <div class="feature-card-media">
+                    @if ($card->image_path)
+                        <img
+                            src="{{ asset($card->image_path) }}"
+                            class="feature-card-media-image"
+                            alt="{{ $card->name }}"
+                            loading="lazy"
+                            onerror="this.style.display='none'; this.closest('.feature-card-media')?.classList.add('no-image');"
+                        >
+                    @endif
+                    <span class="feature-card-media-fallback {{ $card->image_path ? 'is-hidden' : '' }}">{{ strtoupper(mb_substr($card->name, 0, 1)) }}</span>
                 </div>
-                <div class="card-body text-center">
-                    <h5 class="card-title mb-0">{{ $card->name }}</h5>
-                    <p class="card-description" title="{{ $card->description ?? '' }}">{{ $card->description ?? '' }}</p>
+
+                <div class="feature-card-content">
+                    <p class="feature-card-title" title="{{ $titleText }}">{{ $titleText }}</p>
+                    <p class="feature-card-text" title="{{ $descriptionText }}">{{ $descriptionText }}</p>
                 </div>
             </div>
         </div>

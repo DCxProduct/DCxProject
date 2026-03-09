@@ -222,11 +222,15 @@ class CardController extends Controller
                 ? ['required', 'url', 'max:255']
                 : ['nullable', 'url', 'max:255'],
             'require_login' => ['nullable', 'boolean'],
-            'image' => ['nullable', 'image', 'max:2048'],
+            'image' => $card
+                ? ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048']
+                : ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
         ];
 
         $validator = Validator::make($request->all(), $rules, [
             'link_url.required' => 'The Link URL field is required when destination is URL.',
+            'image.required' => 'Please upload an image before creating this application.',
+            'image.mimes' => 'Image must be a JPG, JPEG, PNG, or WEBP file.',
         ]);
 
         $validator->after(function ($validator) use ($request, $card) {

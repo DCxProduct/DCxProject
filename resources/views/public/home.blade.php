@@ -5,7 +5,7 @@
 @section('content')
 
     <!-- HERO -->
-    <div class="hero-section text-white text-center">
+    <div class="hero-section text-center">
         <h1 class="fw-bold">Welcome to Project In DCX</h1>
         <p class="mt-2">Search anything quickly in your system using the search box below.</p>
 
@@ -361,6 +361,41 @@
                 loadFolderCards(folderId, folderName);
             };
 
+            const openCardDestination = (cardLink) => {
+                if (cardLink.target === '_blank') {
+                    window.open(cardLink.href, '_blank', 'noopener');
+                    return;
+                }
+
+                window.location.href = cardLink.href;
+            };
+
+            const playCardClickAnimation = (cardLink, clickEvent) => {
+                const card = cardLink.closest('.project-card');
+                if (!card) {
+                    return Promise.resolve();
+                }
+
+                card.classList.remove('is-opening');
+                void card.offsetWidth;
+                card.classList.add('is-opening');
+
+                const rect = card.getBoundingClientRect();
+                const ripple = document.createElement('span');
+                ripple.className = 'project-card-click-ripple';
+                ripple.style.left = `${(clickEvent.clientX || (rect.left + rect.width / 2)) - rect.left}px`;
+                ripple.style.top = `${(clickEvent.clientY || (rect.top + rect.height / 2)) - rect.top}px`;
+                card.appendChild(ripple);
+
+                return new Promise((resolve) => {
+                    window.setTimeout(() => {
+                        ripple.remove();
+                        card.classList.remove('is-opening');
+                        resolve();
+                    }, 180);
+                });
+            };
+
             const handleCardOpen = async (event, rootContainer) => {
                 const cardLink = event.target.closest('a.js-card-open-link');
                 if (!cardLink || !rootContainer.contains(cardLink)) {
@@ -371,24 +406,27 @@
                 const guarded = cardLink.classList.contains('js-login-required');
 
                 if (!guarded) {
+                    event.preventDefault();
+                    await playCardClickAnimation(cardLink, event);
+
                     if (isFolderDestination) {
-                        event.preventDefault();
                         openFolderFromLink(cardLink);
                         return true;
                     }
-                    return false;
+
+                    openCardDestination(cardLink);
+                    return true;
                 }
 
                 event.preventDefault();
+                await playCardClickAnimation(cardLink, event);
                 const forceLogin = cardLink.dataset.forceLogin === '1';
 
                 if (isAuthenticated && !forceLogin) {
                     if (isFolderDestination) {
                         openFolderFromLink(cardLink);
-                    } else if (cardLink.target === '_blank') {
-                        window.open(cardLink.href, '_blank', 'noopener');
                     } else {
-                        window.location.href = cardLink.href;
+                        openCardDestination(cardLink);
                     }
                     return true;
                 }
@@ -410,10 +448,8 @@
 
                 if (isFolderDestination) {
                     openFolderFromLink(cardLink);
-                } else if (cardLink.target === '_blank') {
-                    window.open(cardLink.href, '_blank', 'noopener');
                 } else {
-                    window.location.href = cardLink.href;
+                    openCardDestination(cardLink);
                 }
 
                 return true;
