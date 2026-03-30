@@ -486,15 +486,6 @@
             justify-content: center;
         }
 
-        .public-home-shell {
-            position: relative;
-        }
-
-        .app-hero-panel,
-        .app-section-panel {
-            position: relative;
-        }
-
         .footer {
             background: #f8f9fa;
             padding: 40px 0;
@@ -1039,57 +1030,26 @@
                 margin-bottom: 0;
             }
 
-            .public-home-shell {
-                padding: 10px 14px 0;
-            }
-
-            .app-hero-panel {
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 251, 255, 0.94) 100%);
-                border: 1px solid rgba(2, 88, 120, 0.08);
-                border-radius: 28px;
-                box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
-                padding: 22px 18px 18px;
-                overflow: hidden;
-            }
-
-            .app-hero-panel::before {
-                content: "";
-                position: absolute;
-                inset: 0 0 auto;
-                height: 96px;
-                background: linear-gradient(135deg, rgba(2, 88, 120, 0.12), rgba(230, 182, 65, 0.1));
-                pointer-events: none;
-            }
-
-            .app-section-panel {
-                margin-top: 18px;
-                background: rgba(255, 255, 255, 0.82);
-                border: 1px solid rgba(2, 88, 120, 0.08);
-                border-radius: 26px;
-                box-shadow: 0 18px 34px rgba(15, 23, 42, 0.05);
-                padding: 18px 14px 20px;
-            }
-
             .project-card {
-                min-height: 280px;
-                border-radius: 26px;
-                padding: 16px 14px 18px;
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(242, 248, 252, 0.94) 100%) !important;
-                border: 1px solid rgba(2, 88, 120, 0.08) !important;
-                box-shadow: 0 14px 24px rgba(15, 23, 42, 0.08) !important;
+                min-height: 265px;
+                border-radius: 22px;
+                padding: 14px 12px 16px;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.86) 0%, rgba(248, 251, 253, 0.8) 100%) !important;
+                border: 1px solid rgba(2, 88, 120, 0.06) !important;
+                box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06) !important;
             }
 
             .project-card::after {
-                border-radius: 26px;
-                opacity: 1;
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 100%);
-                border-color: rgba(2, 88, 120, 0.04);
+                border-radius: 22px;
+                opacity: 0.35;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.02) 100%);
+                border-color: rgba(2, 88, 120, 0.03);
             }
 
             .feature-card-media {
-                width: 116px;
-                height: 116px;
-                margin-top: 10px;
+                width: 110px;
+                height: 110px;
+                margin-top: 8px;
                 border-radius: 50%;
                 background: transparent !important;
                 box-shadow: none !important;
@@ -1101,14 +1061,14 @@
             }
 
             .feature-card-title {
-                font-size: 1rem;
+                font-size: 0.98rem;
                 min-height: auto;
-                margin-top: 8px;
+                margin-top: 6px;
             }
 
             .feature-card-text {
-                font-size: 0.88rem;
-                max-height: 5.7em;
+                font-size: 0.85rem;
+                max-height: 5.2em;
                 overflow: hidden;
                 padding-right: 0;
                 line-height: 1.45;
@@ -1141,8 +1101,8 @@
             }
 
             #cards-section.container {
-                padding-left: 0;
-                padding-right: 0;
+                padding-left: 12px;
+                padding-right: 12px;
             }
 
             .folder-modal-dialog {
@@ -1182,17 +1142,6 @@
                 border-top: 1px solid rgba(2, 88, 120, 0.08);
                 padding-top: 18px;
             }
-        }
-
-        body.theme-dark .app-hero-panel,
-        body.theme-dark .app-section-panel {
-            background: linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(17, 24, 39, 0.78) 100%);
-            border-color: rgba(148, 163, 184, 0.16);
-            box-shadow: 0 20px 36px rgba(2, 6, 23, 0.32);
-        }
-
-        body.theme-dark .app-hero-panel::before {
-            background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(245, 193, 66, 0.08));
         }
 
         body.theme-dark .navbar {

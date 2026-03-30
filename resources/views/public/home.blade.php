@@ -58,36 +58,32 @@
         }
     </style>
 
-    <div class="public-home-shell">
-        <!-- HERO -->
-        <div class="app-hero-panel">
-            <div class="hero-section text-center">
-                <h1 class="fw-bold">Welcome to Project In DCX</h1>
-                <p class="mt-2">Search anything quickly in your system using the search box below.</p>
+    <!-- HERO -->
+    <div class="hero-section text-center">
+        <h1 class="fw-bold">Welcome to Project In DCX</h1>
+        <p class="mt-2">Search anything quickly in your system using the search box below.</p>
 
-                <form id="card-search-form" class="home-search-form d-flex flex-column flex-sm-row justify-content-center align-items-center mt-4 px-3 gap-2" method="GET" action="{{ url('/') }}">
-                    <input type="text" id="card-search-input" name="q" class="home-search-input form-control" placeholder="Search name Application..." value="{{ $query ?? '' }}">
-                    <button class="home-search-button btn btn-warning ms-0 ms-sm-2 px-4" type="submit">Search</button>
-                </form>
+        <form id="card-search-form" class="home-search-form d-flex flex-column flex-sm-row justify-content-center align-items-center mt-4 px-3 gap-2" method="GET" action="{{ url('/') }}">
+            <input type="text" id="card-search-input" name="q" class="home-search-input form-control" placeholder="Search name Application..." value="{{ $query ?? '' }}">
+            <button class="home-search-button btn btn-warning ms-0 ms-sm-2 px-4" type="submit">Search</button>
+        </form>
+    </div>
+
+    <!-- CARDS -->
+    <div id="cards-section" class="container my-5">
+        <div class="home-section-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+            <div>
+                <h4 class="home-section-title fw-bold mb-0">Latest Application</h4>
+            </div>
+            <div class="d-flex gap-2">
+                @if (($isAdmin ?? false))
+                    <a href="{{ route('admin.cards.create') }}" class="btn btn-success btn-sm">Create Application</a>
+                @endif
             </div>
         </div>
 
-        <!-- CARDS -->
-        <div id="cards-section" class="app-section-panel container my-4">
-            <div class="home-section-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-                <div>
-                    <h4 class="home-section-title fw-bold mb-0">Latest Application</h4>
-                </div>
-                <div class="d-flex gap-2">
-                    @if (($isAdmin ?? false))
-                        <a href="{{ route('admin.cards.create') }}" class="btn btn-success btn-sm">Create Application</a>
-                    @endif
-                </div>
-            </div>
-
-            <div id="cards-container">
-                @include('public.partials.cards')
-            </div>
+        <div id="cards-container">
+            @include('public.partials.cards')
         </div>
     </div>
 
