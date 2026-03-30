@@ -1031,47 +1031,49 @@
             }
 
             .project-card {
-                min-height: 265px;
-                border-radius: 22px;
-                padding: 14px 12px 16px;
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.86) 0%, rgba(248, 251, 253, 0.8) 100%) !important;
-                border: 1px solid rgba(2, 88, 120, 0.06) !important;
-                box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06) !important;
+                min-height: 285px;
+                border-radius: 24px;
+                padding: 14px 10px 18px;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(248, 251, 253, 0.92) 100%) !important;
+                border: 1px solid rgba(2, 88, 120, 0.05) !important;
+                box-shadow: 0 10px 18px rgba(15, 23, 42, 0.07) !important;
             }
 
             .project-card::after {
-                border-radius: 22px;
-                opacity: 0.35;
-                background: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.02) 100%);
-                border-color: rgba(2, 88, 120, 0.03);
+                border-radius: 24px;
+                opacity: 0.2;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%);
+                border-color: rgba(2, 88, 120, 0.02);
             }
 
             .feature-card-media {
-                width: 110px;
-                height: 110px;
-                margin-top: 8px;
+                width: 96px;
+                height: 96px;
+                margin-top: 6px;
                 border-radius: 50%;
-                background: transparent !important;
-                box-shadow: none !important;
+                background: linear-gradient(180deg, #ffffff 0%, #eef6fb 100%) !important;
+                box-shadow: inset 0 0 0 1px rgba(2, 88, 120, 0.08);
             }
 
             .feature-card-media::before {
                 inset: 4px;
                 border-radius: 50%;
+                opacity: 1;
+                animation: none;
             }
 
             .feature-card-title {
-                font-size: 0.98rem;
+                font-size: 0.9rem;
                 min-height: auto;
                 margin-top: 6px;
             }
 
             .feature-card-text {
-                font-size: 0.85rem;
-                max-height: 5.2em;
+                font-size: 0.76rem;
+                max-height: 5.4em;
                 overflow: hidden;
                 padding-right: 0;
-                line-height: 1.45;
+                line-height: 1.42;
             }
 
             .feature-admin-actions {
