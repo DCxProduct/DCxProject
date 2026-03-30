@@ -17,12 +17,6 @@
             letter-spacing: -0.02em;
         }
 
-        .home-section-subtitle {
-            margin: 4px 0 0;
-            font-size: 0.92rem;
-            color: #557286;
-        }
-
         @media (max-width: 767.98px) {
             .home-section-header {
                 text-align: left;
@@ -61,10 +55,6 @@
             .home-section-title {
                 font-size: 1.25rem;
             }
-
-            .home-section-subtitle {
-                font-size: 0.84rem;
-            }
         }
     </style>
 
@@ -87,7 +77,6 @@
             <div class="home-section-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
                 <div>
                     <h4 class="home-section-title fw-bold mb-0">Latest Application</h4>
-                    <p class="home-section-subtitle">Quick shortcuts, like an app dashboard.</p>
                 </div>
                 <div class="d-flex gap-2">
                     @if (($isAdmin ?? false))

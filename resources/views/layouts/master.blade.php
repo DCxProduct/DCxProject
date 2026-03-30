@@ -881,8 +881,25 @@
 
         @media (max-width: 576px) {
             .navbar .btn {
-                width: 100%;
+                width: auto;
                 min-width: 110px;
+            }
+
+            .site-navbar-inner {
+                padding-left: 14px;
+                padding-right: 14px;
+            }
+
+            .public-auth-primary {
+                min-width: 104px;
+                padding-left: 0.9rem !important;
+                padding-right: 0.9rem !important;
+            }
+
+            .theme-toggle-btn {
+                width: 38px;
+                height: 38px;
+                flex-basis: 38px;
             }
         }
 
@@ -898,6 +915,17 @@
 
         .site-auth-controls {
             min-width: 0;
+        }
+
+        .public-auth-row {
+            min-width: 0;
+        }
+
+        .public-auth-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
         }
 
         @media (max-width: 991.98px) {
@@ -924,26 +952,36 @@
             }
 
             .site-navbar-inner {
-                flex-wrap: wrap;
-                justify-content: center;
+                flex-wrap: nowrap;
+                justify-content: space-between;
+                align-items: center;
                 padding-top: 10px;
-                padding-bottom: 12px;
+                padding-bottom: 10px;
+                gap: 10px;
             }
 
             .site-navbar-inner .navbar-brand {
                 margin-right: 0;
-                width: 100%;
-                justify-content: center;
+                width: auto;
+                justify-content: flex-start;
+                flex: 0 0 auto;
             }
 
             .site-auth-controls {
-                width: 100%;
-                justify-content: center;
-                flex-wrap: wrap;
+                width: auto;
+                justify-content: flex-end;
+                flex-wrap: nowrap;
+                flex: 0 1 auto;
+            }
+
+            .public-auth-row {
+                gap: 10px !important;
+                flex-wrap: nowrap;
             }
 
             .dcx-logo {
-                height: 32px;
+                height: 28px;
+                margin-right: 0 !important;
             }
 
             .navbar {
@@ -955,19 +993,33 @@
             }
 
             .theme-toggle-btn {
-                width: 42px;
-                height: 42px;
+                width: 40px;
+                height: 40px;
                 border-radius: 14px;
                 box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+                flex: 0 0 40px;
             }
 
             .manage-users-btn,
             .site-auth-controls .btn-warning {
-                min-height: 42px;
-                padding: 0.55rem 1.15rem;
+                min-height: 40px;
+                padding: 0.55rem 1rem;
                 border-radius: 14px;
                 font-weight: 700;
                 box-shadow: 0 12px 24px rgba(230, 182, 65, 0.18);
+            }
+
+            .public-auth-primary {
+                min-width: 118px;
+            }
+
+            .account-trigger {
+                box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+            }
+
+            .profile-pill-avatar {
+                width: 40px;
+                height: 40px;
             }
 
             .hero-section {
@@ -1130,6 +1182,31 @@
                 border-top: 1px solid rgba(2, 88, 120, 0.08);
                 padding-top: 18px;
             }
+        }
+
+        body.theme-dark .app-hero-panel,
+        body.theme-dark .app-section-panel {
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.88) 0%, rgba(17, 24, 39, 0.78) 100%);
+            border-color: rgba(148, 163, 184, 0.16);
+            box-shadow: 0 20px 36px rgba(2, 6, 23, 0.32);
+        }
+
+        body.theme-dark .app-hero-panel::before {
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.14), rgba(245, 193, 66, 0.08));
+        }
+
+        body.theme-dark .navbar {
+            background: rgba(15, 23, 42, 0.92) !important;
+            border-bottom-color: rgba(148, 163, 184, 0.14);
+        }
+
+        body.theme-dark .theme-toggle-btn {
+            box-shadow: 0 8px 20px rgba(2, 6, 23, 0.26);
+        }
+
+        body.theme-dark .site-auth-controls .btn-warning,
+        body.theme-dark .manage-users-btn {
+            box-shadow: 0 12px 24px rgba(2, 6, 23, 0.24);
         }
     </style>
 
