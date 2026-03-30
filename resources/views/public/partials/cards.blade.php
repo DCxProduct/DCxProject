@@ -1,7 +1,7 @@
 <div id="cards-grid" class="row g-3">
     @forelse ($cards as $card)
         @php
-            $colClass = !empty($isFolderView) ? 'col-12 col-sm-6 col-lg-4' : 'col-12 col-sm-6 col-lg-3';
+            $colClass = !empty($isFolderView) ? 'col-6 col-sm-6 col-lg-4' : 'col-6 col-sm-6 col-lg-3';
         @endphp
         <div class="{{ $colClass }} d-flex">
             @php

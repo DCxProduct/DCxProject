@@ -486,6 +486,15 @@
             justify-content: center;
         }
 
+        .public-home-shell {
+            position: relative;
+        }
+
+        .app-hero-panel,
+        .app-section-panel {
+            position: relative;
+        }
+
         .footer {
             background: #f8f9fa;
             padding: 40px 0;
@@ -908,11 +917,17 @@
         }
 
         @media (max-width: 767.98px) {
+            body {
+                background:
+                    radial-gradient(circle at top, rgba(230, 182, 65, 0.16), transparent 32%),
+                    linear-gradient(180deg, #edf6fb 0%, #f7fbfe 54%, #fdfcf7 100%);
+            }
+
             .site-navbar-inner {
                 flex-wrap: wrap;
                 justify-content: center;
-                padding-top: 8px;
-                padding-bottom: 8px;
+                padding-top: 10px;
+                padding-bottom: 12px;
             }
 
             .site-navbar-inner .navbar-brand {
@@ -931,46 +946,120 @@
                 height: 32px;
             }
 
+            .navbar {
+                position: sticky;
+                top: 0;
+                backdrop-filter: blur(18px);
+                background: rgba(255, 255, 255, 0.94) !important;
+                border-bottom: 1px solid rgba(2, 88, 120, 0.08);
+            }
+
+            .theme-toggle-btn {
+                width: 42px;
+                height: 42px;
+                border-radius: 14px;
+                box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+            }
+
+            .manage-users-btn,
+            .site-auth-controls .btn-warning {
+                min-height: 42px;
+                padding: 0.55rem 1.15rem;
+                border-radius: 14px;
+                font-weight: 700;
+                box-shadow: 0 12px 24px rgba(230, 182, 65, 0.18);
+            }
+
             .hero-section {
-                padding: 42px 0 28px;
+                padding: 20px 0 18px;
             }
 
             .hero-section h1 {
-                font-size: clamp(1.75rem, 7vw, 2.3rem);
+                font-size: clamp(1.6rem, 7vw, 2.15rem);
                 line-height: 1.18;
-                padding: 0 14px;
+                padding: 0;
+                margin-bottom: 10px;
             }
 
             .hero-section p {
-                font-size: 0.96rem;
-                padding: 0 18px;
+                font-size: 0.95rem;
+                padding: 0;
+                margin-bottom: 0;
+            }
+
+            .public-home-shell {
+                padding: 10px 14px 0;
+            }
+
+            .app-hero-panel {
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 251, 255, 0.94) 100%);
+                border: 1px solid rgba(2, 88, 120, 0.08);
+                border-radius: 28px;
+                box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+                padding: 22px 18px 18px;
+                overflow: hidden;
+            }
+
+            .app-hero-panel::before {
+                content: "";
+                position: absolute;
+                inset: 0 0 auto;
+                height: 96px;
+                background: linear-gradient(135deg, rgba(2, 88, 120, 0.12), rgba(230, 182, 65, 0.1));
+                pointer-events: none;
+            }
+
+            .app-section-panel {
+                margin-top: 18px;
+                background: rgba(255, 255, 255, 0.82);
+                border: 1px solid rgba(2, 88, 120, 0.08);
+                border-radius: 26px;
+                box-shadow: 0 18px 34px rgba(15, 23, 42, 0.05);
+                padding: 18px 14px 20px;
             }
 
             .project-card {
-                min-height: 264px;
-                border-radius: 20px;
+                min-height: 214px;
+                border-radius: 24px;
+                padding: 12px 10px 14px;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(242, 248, 252, 0.94) 100%) !important;
+                border: 1px solid rgba(2, 88, 120, 0.08) !important;
+                box-shadow: 0 14px 24px rgba(15, 23, 42, 0.08) !important;
             }
 
             .project-card::after {
-                border-radius: 20px;
+                border-radius: 24px;
+                opacity: 1;
+                background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 100%);
+                border-color: rgba(2, 88, 120, 0.04);
             }
 
             .feature-card-media {
-                width: 112px;
-                height: 112px;
-                margin-top: 2px;
+                width: 84px;
+                height: 84px;
+                margin-top: 6px;
+                border-radius: 24px;
+                background: linear-gradient(135deg, rgba(2, 88, 120, 0.08), rgba(230, 182, 65, 0.14)) !important;
+                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+            }
+
+            .feature-card-media::before {
+                inset: 6px;
+                border-radius: 20px;
             }
 
             .feature-card-title {
-                font-size: 0.95rem;
+                font-size: 0.9rem;
                 min-height: auto;
+                margin-top: 4px;
             }
 
             .feature-card-text {
-                font-size: 0.84rem;
-                max-height: none;
-                overflow: visible;
+                font-size: 0.78rem;
+                max-height: 4.6em;
+                overflow: hidden;
                 padding-right: 0;
+                line-height: 1.45;
             }
 
             .feature-admin-actions {
@@ -999,6 +1088,11 @@
                 font-size: 0.92rem;
             }
 
+            #cards-section.container {
+                padding-left: 0;
+                padding-right: 0;
+            }
+
             .folder-modal-dialog {
                 width: 100%;
                 max-height: 100vh;
@@ -1024,10 +1118,17 @@
 
             .footer {
                 padding: 30px 0;
+                margin-top: 20px !important;
+                background: transparent;
             }
 
             .footer .row {
                 justify-content: center;
+            }
+
+            .footer .container {
+                border-top: 1px solid rgba(2, 88, 120, 0.08);
+                padding-top: 18px;
             }
         }
     </style>

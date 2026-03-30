@@ -9,49 +9,96 @@
             max-width: 420px;
         }
 
+        .home-search-button {
+            min-width: 140px;
+        }
+
+        .home-section-title {
+            letter-spacing: -0.02em;
+        }
+
+        .home-section-subtitle {
+            margin: 4px 0 0;
+            font-size: 0.92rem;
+            color: #557286;
+        }
+
         @media (max-width: 767.98px) {
             .home-section-header {
-                text-align: center;
-                justify-content: center !important;
+                text-align: left;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
             }
 
             .home-search-form {
-                padding-left: 1rem !important;
-                padding-right: 1rem !important;
+                margin-top: 18px !important;
+                padding-left: 0 !important;
+                padding-right: 0 !important;
             }
 
             .home-search-input,
+            .home-search-button,
             .home-search-form .btn {
                 width: 100%;
                 max-width: none;
             }
+
+            .home-search-input {
+                min-height: 52px;
+                border-radius: 16px;
+                padding-left: 16px;
+                font-size: 1rem;
+                border-color: rgba(2, 88, 120, 0.08);
+                box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+            }
+
+            .home-search-button {
+                min-height: 52px;
+                border-radius: 16px;
+                font-weight: 700;
+            }
+
+            .home-section-title {
+                font-size: 1.25rem;
+            }
+
+            .home-section-subtitle {
+                font-size: 0.84rem;
+            }
         }
     </style>
 
-    <!-- HERO -->
-    <div class="hero-section text-center">
-        <h1 class="fw-bold">Welcome to Project In DCX</h1>
-        <p class="mt-2">Search anything quickly in your system using the search box below.</p>
+    <div class="public-home-shell">
+        <!-- HERO -->
+        <div class="app-hero-panel">
+            <div class="hero-section text-center">
+                <h1 class="fw-bold">Welcome to Project In DCX</h1>
+                <p class="mt-2">Search anything quickly in your system using the search box below.</p>
 
-        <form id="card-search-form" class="home-search-form d-flex flex-column flex-sm-row justify-content-center align-items-center mt-4 px-3 gap-2" method="GET" action="{{ url('/') }}">
-            <input type="text" id="card-search-input" name="q" class="home-search-input form-control" placeholder="Search name Application..." value="{{ $query ?? '' }}">
-            <button class="btn btn-warning ms-0 ms-sm-2 px-4" type="submit">Search</button>
-        </form>
-    </div>
-
-    <!-- CARDS -->
-    <div id="cards-section" class="container my-5">
-        <div class="home-section-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-            <h4 class="fw-bold mb-0">Latest Application</h4>
-            <div class="d-flex gap-2">
-                @if (($isAdmin ?? false))
-                    <a href="{{ route('admin.cards.create') }}" class="btn btn-success btn-sm">Create Application</a>
-                @endif
+                <form id="card-search-form" class="home-search-form d-flex flex-column flex-sm-row justify-content-center align-items-center mt-4 px-3 gap-2" method="GET" action="{{ url('/') }}">
+                    <input type="text" id="card-search-input" name="q" class="home-search-input form-control" placeholder="Search name Application..." value="{{ $query ?? '' }}">
+                    <button class="home-search-button btn btn-warning ms-0 ms-sm-2 px-4" type="submit">Search</button>
+                </form>
             </div>
         </div>
 
-        <div id="cards-container">
-            @include('public.partials.cards')
+        <!-- CARDS -->
+        <div id="cards-section" class="app-section-panel container my-4">
+            <div class="home-section-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+                <div>
+                    <h4 class="home-section-title fw-bold mb-0">Latest Application</h4>
+                    <p class="home-section-subtitle">Quick shortcuts, like an app dashboard.</p>
+                </div>
+                <div class="d-flex gap-2">
+                    @if (($isAdmin ?? false))
+                        <a href="{{ route('admin.cards.create') }}" class="btn btn-success btn-sm">Create Application</a>
+                    @endif
+                </div>
+            </div>
+
+            <div id="cards-container">
+                @include('public.partials.cards')
+            </div>
         </div>
     </div>
 
