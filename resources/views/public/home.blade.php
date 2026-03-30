@@ -260,6 +260,41 @@
                 }).then((response) => response.text());
             };
 
+            const bindTouchCardFeedback = (root) => {
+                if (!root) {
+                    return;
+                }
+
+                let activeCard = null;
+
+                const clearActiveCard = () => {
+                    if (!activeCard) {
+                        return;
+                    }
+
+                    activeCard.classList.remove('is-pressed');
+                    activeCard = null;
+                };
+
+                root.addEventListener('touchstart', (event) => {
+                    const cardLink = event.target.closest('a.js-card-open-link');
+                    if (!cardLink || !root.contains(cardLink)) {
+                        clearActiveCard();
+                        return;
+                    }
+
+                    clearActiveCard();
+                    activeCard = cardLink.closest('.project-card');
+                    activeCard?.classList.add('is-pressed');
+                }, { passive: true });
+
+                root.addEventListener('touchend', () => {
+                    window.setTimeout(clearActiveCard, 140);
+                }, { passive: true });
+
+                root.addEventListener('touchcancel', clearActiveCard, { passive: true });
+            };
+
             const showLoginAlert = (message, loginUrl = null) => {
                 if (!loginAlertOverlay || !loginAlertText) {
                     return;
@@ -592,6 +627,8 @@
                 }
             });
 
+            bindTouchCardFeedback(cardsContainer);
+
             if (folderModalBody) {
                 folderModalBody.addEventListener('click', async (event) => {
                     if (await handleCardOpen(event, folderModalBody)) {
@@ -611,6 +648,8 @@
                         }
                     }
                 });
+
+                bindTouchCardFeedback(folderModalBody);
             }
         }
     </script>
