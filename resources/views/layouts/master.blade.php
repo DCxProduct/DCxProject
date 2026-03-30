@@ -482,6 +482,10 @@
             color: var(--brand-blue);
         }
 
+        .cards-pagination-nav {
+            justify-content: center;
+        }
+
         .footer {
             background: #f8f9fa;
             padding: 40px 0;
@@ -878,15 +882,163 @@
             z-index: 2100;
             overflow: visible !important;
         }
+
+        .site-navbar-inner {
+            gap: 16px;
+        }
+
+        .site-auth-controls {
+            min-width: 0;
+        }
+
+        @media (max-width: 991.98px) {
+            .hero-section {
+                padding: 54px 0 40px;
+            }
+
+            .feature-card-media {
+                width: 128px;
+                height: 128px;
+            }
+
+            .project-card {
+                min-height: 292px;
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .site-navbar-inner {
+                flex-wrap: wrap;
+                justify-content: center;
+                padding-top: 8px;
+                padding-bottom: 8px;
+            }
+
+            .site-navbar-inner .navbar-brand {
+                margin-right: 0;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .site-auth-controls {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .dcx-logo {
+                height: 32px;
+            }
+
+            .hero-section {
+                padding: 42px 0 28px;
+            }
+
+            .hero-section h1 {
+                font-size: clamp(1.75rem, 7vw, 2.3rem);
+                line-height: 1.18;
+                padding: 0 14px;
+            }
+
+            .hero-section p {
+                font-size: 0.96rem;
+                padding: 0 18px;
+            }
+
+            .project-card {
+                min-height: 264px;
+                border-radius: 20px;
+            }
+
+            .project-card::after {
+                border-radius: 20px;
+            }
+
+            .feature-card-media {
+                width: 112px;
+                height: 112px;
+                margin-top: 2px;
+            }
+
+            .feature-card-title {
+                font-size: 0.95rem;
+                min-height: auto;
+            }
+
+            .feature-card-text {
+                font-size: 0.84rem;
+                max-height: none;
+                overflow: visible;
+                padding-right: 0;
+            }
+
+            .feature-admin-actions {
+                top: 8px;
+                right: 8px;
+            }
+
+            .feature-admin-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 0.82rem;
+            }
+
+            .cards-pagination-nav {
+                gap: 8px;
+            }
+
+            .cards-page-btn {
+                min-width: 40px;
+                height: 40px;
+                border-radius: 10px;
+            }
+
+            .cards-pagination-meta {
+                text-align: center;
+                font-size: 0.92rem;
+            }
+
+            .folder-modal-dialog {
+                width: 100%;
+                max-height: 100vh;
+                border-radius: 18px 18px 0 0;
+                align-self: end;
+            }
+
+            .folder-modal-header {
+                padding: 12px 14px;
+            }
+
+            .folder-modal-body {
+                padding: 14px;
+                max-height: calc(100vh - 72px);
+            }
+
+            .confirm-box,
+            .login-alert-box,
+            .loading-alert-box {
+                padding: 18px 16px;
+                border-radius: 12px;
+            }
+
+            .footer {
+                padding: 30px 0;
+            }
+
+            .footer .row {
+                justify-content: center;
+            }
+        }
     </style>
 
     <nav class="navbar navbar-light bg-white shadow-sm">
-        <div class="container">
+        <div class="container site-navbar-inner">
             <a class="navbar-brand d-flex align-items-center" href="/">
                 <img src="{{ asset('img/dcx.png') }}" class="me-2 dcx-logo" alt="DCX logo">
             </a>
 
-            <div id="public-auth-controls" class="d-flex align-items-center gap-2">
+            <div id="public-auth-controls" class="site-auth-controls d-flex align-items-center gap-2">
                 @include('public.partials.auth_controls', [
                     'loggedUser' => auth()->user(),
                     'nextPath' => request()->getRequestUri(),

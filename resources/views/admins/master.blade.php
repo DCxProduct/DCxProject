@@ -581,11 +581,91 @@
             z-index: 2100;
             overflow: visible !important;
         }
+
+        .site-navbar-inner {
+            gap: 16px;
+        }
+
+        .site-auth-controls {
+            min-width: 0;
+        }
+
+        @media (max-width: 991.98px) {
+            .hero-section {
+                padding: 56px 0 40px;
+            }
+
+            .admin-card-media {
+                height: 170px;
+            }
+        }
+
+        @media (max-width: 767.98px) {
+            .site-navbar-inner {
+                flex-wrap: wrap;
+                justify-content: center;
+                padding-top: 8px;
+                padding-bottom: 8px;
+            }
+
+            .site-navbar-inner .navbar-brand {
+                margin-right: 0;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .site-auth-controls {
+                width: 100%;
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+
+            .dcx-logo {
+                height: 32px;
+            }
+
+            .hero-section {
+                padding: 42px 0 30px;
+            }
+
+            .hero-section h1 {
+                font-size: clamp(1.7rem, 7vw, 2.2rem);
+                line-height: 1.18;
+                padding: 0 14px;
+            }
+
+            .hero-section p {
+                font-size: 0.96rem;
+                padding: 0 18px;
+            }
+
+            .admin-card-media {
+                height: 150px;
+                margin: 10px 10px 6px;
+            }
+
+            .admin-card-actions {
+                position: static;
+                margin: 10px 10px 0;
+                justify-content: center;
+            }
+
+            .success-toast {
+                top: 12px;
+                width: calc(100% - 20px);
+                padding: 10px 12px;
+            }
+
+            .confirm-box {
+                padding: 18px 16px;
+                border-radius: 12px;
+            }
+        }
     </style>
 
 
     <nav class="navbar navbar-light bg-white shadow-sm">
-        <div class="container">
+        <div class="container site-navbar-inner">
             <!-- Logo -->
             <a class="navbar-brand d-flex align-items-center" href="/">
                 <img src="{{ asset('img/dcx.png') }}" class="me-2 dcx-logo">
@@ -594,7 +674,7 @@
             
 
             <!-- Profile Menu -->
-            <div id="public-auth-controls" class="d-flex align-items-center gap-2">
+            <div id="public-auth-controls" class="site-auth-controls d-flex align-items-center gap-2">
                 @include('public.partials.auth_controls', [
                     'loggedUser' => auth()->user(),
                     'nextPath' => request()->getRequestUri(),

@@ -13,7 +13,7 @@
 
         <div class="row g-4">
             @forelse ($cards as $card)
-                <div class="col-md-4">
+                <div class="col-12 col-sm-6 col-lg-4">
                     <div class="card project-card shadow-sm text-center">
                         <div class="admin-card-media">
                             @if (!is_null($card->shape_number))

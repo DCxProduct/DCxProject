@@ -71,11 +71,28 @@
                 justify-content: flex-end;
                 align-items: center;
             }
+
+            @media (max-width: 767.98px) {
+                .users-header {
+                    text-align: center;
+                    justify-content: center !important;
+                }
+
+                .users-header .btn {
+                    width: 100%;
+                }
+
+                .users-table th:last-child,
+                .users-table td:last-child {
+                    width: auto;
+                    padding-right: 8px;
+                }
+            }
         </style>
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="users-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
             <h4 class="fw-bold mb-0">Users</h4>
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2 justify-content-center">
                 <a href="{{ route('admin.users.create') }}" class="btn btn-success">Create New</a>
                 <a href="{{ route('admin.dashboard') }}" class="btn btn-outline-secondary">Back</a>
             </div>

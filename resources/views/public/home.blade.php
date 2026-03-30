@@ -4,20 +4,44 @@
 
 @section('content')
 
+    <style>
+        .home-search-input {
+            max-width: 420px;
+        }
+
+        @media (max-width: 767.98px) {
+            .home-section-header {
+                text-align: center;
+                justify-content: center !important;
+            }
+
+            .home-search-form {
+                padding-left: 1rem !important;
+                padding-right: 1rem !important;
+            }
+
+            .home-search-input,
+            .home-search-form .btn {
+                width: 100%;
+                max-width: none;
+            }
+        }
+    </style>
+
     <!-- HERO -->
     <div class="hero-section text-center">
         <h1 class="fw-bold">Welcome to Project In DCX</h1>
         <p class="mt-2">Search anything quickly in your system using the search box below.</p>
 
-        <form id="card-search-form" class="d-flex flex-column flex-sm-row justify-content-center align-items-center mt-4 px-3 gap-2" method="GET" action="{{ url('/') }}">
-            <input type="text" id="card-search-input" name="q" class="form-control" style="max-width: 420px;" placeholder="Search name Application..." value="{{ $query ?? '' }}">
+        <form id="card-search-form" class="home-search-form d-flex flex-column flex-sm-row justify-content-center align-items-center mt-4 px-3 gap-2" method="GET" action="{{ url('/') }}">
+            <input type="text" id="card-search-input" name="q" class="home-search-input form-control" placeholder="Search name Application..." value="{{ $query ?? '' }}">
             <button class="btn btn-warning ms-0 ms-sm-2 px-4" type="submit">Search</button>
         </form>
     </div>
 
     <!-- CARDS -->
     <div id="cards-section" class="container my-5">
-        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+        <div class="home-section-header d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
             <h4 class="fw-bold mb-0">Latest Application</h4>
             <div class="d-flex gap-2">
                 @if (($isAdmin ?? false))
