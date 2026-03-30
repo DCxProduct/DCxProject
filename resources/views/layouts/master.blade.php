@@ -1071,44 +1071,44 @@
             }
 
             .project-card {
-                min-height: 214px;
-                border-radius: 24px;
-                padding: 12px 10px 14px;
+                min-height: 280px;
+                border-radius: 26px;
+                padding: 16px 14px 18px;
                 background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(242, 248, 252, 0.94) 100%) !important;
                 border: 1px solid rgba(2, 88, 120, 0.08) !important;
                 box-shadow: 0 14px 24px rgba(15, 23, 42, 0.08) !important;
             }
 
             .project-card::after {
-                border-radius: 24px;
+                border-radius: 26px;
                 opacity: 1;
                 background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0.06) 100%);
                 border-color: rgba(2, 88, 120, 0.04);
             }
 
             .feature-card-media {
-                width: 84px;
-                height: 84px;
-                margin-top: 6px;
-                border-radius: 24px;
-                background: linear-gradient(135deg, rgba(2, 88, 120, 0.08), rgba(230, 182, 65, 0.14)) !important;
-                box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+                width: 116px;
+                height: 116px;
+                margin-top: 10px;
+                border-radius: 50%;
+                background: transparent !important;
+                box-shadow: none !important;
             }
 
             .feature-card-media::before {
-                inset: 6px;
-                border-radius: 20px;
+                inset: 4px;
+                border-radius: 50%;
             }
 
             .feature-card-title {
-                font-size: 0.9rem;
+                font-size: 1rem;
                 min-height: auto;
-                margin-top: 4px;
+                margin-top: 8px;
             }
 
             .feature-card-text {
-                font-size: 0.78rem;
-                max-height: 4.6em;
+                font-size: 0.88rem;
+                max-height: 5.7em;
                 overflow: hidden;
                 padding-right: 0;
                 line-height: 1.45;
