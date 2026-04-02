@@ -18,11 +18,11 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
 
-
-            Route::middleware('web')
-                ->namespace('App\Http\Controllers')
-                ->prefix('admin')
-                ->group(base_path('routes/admin.php'));
+            // admin routes are now in routes/web.php
+            // Route::middleware('web')
+            //     ->namespace('App\Http\Controllers')
+            //     ->prefix('admin')
+            //     ->group(base_path('routes/admin.php'));
         },
         health: '/up',
 
